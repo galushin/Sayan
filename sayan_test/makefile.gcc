@@ -1,6 +1,8 @@
 
 WORKDIR = `pwd`
 
+-LD = CXX
+
 INC = 
 CFLAGS = -Wall -fexceptions
 RESINC = 
