@@ -1,0 +1,7 @@
+language: cpp
+compiler: gcc
+
+script:
+    - cd ./sayan_test 
+    - make -f makefile.gcc debug && ./bin/Debug/sayan_test
+    - make -f makefile.gcc release && ./bin/Release/sayan_test
