@@ -1,7 +1,7 @@
 
 WORKDIR = `pwd`
 
--LD = CXX
+LD = $(CXX)
 
 INC = 
 CFLAGS = -Wall -fexceptions
