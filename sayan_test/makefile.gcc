@@ -3,7 +3,7 @@ WORKDIR = `pwd`
 
 LD = $(CXX)
 
-INC = 
+INC = -Icontrib/
 CFLAGS = -Wall -fexceptions
 RESINC = 
 LIBDIR = 
