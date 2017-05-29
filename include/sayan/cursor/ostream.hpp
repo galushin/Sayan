@@ -104,7 +104,7 @@ inline namespace v1
             template <class Char, class Traits>
             static std::true_type test(std::basic_ostream<Char, Traits> &);
 
-            static std::false_type test(void *);
+            static std::false_type test(...);
 
         public:
             using type = decltype(test(std::declval<T&>()));

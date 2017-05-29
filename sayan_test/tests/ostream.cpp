@@ -52,3 +52,21 @@ TEST_CASE("ostream_cursor from rvalue range-for copy")
     CHECK(src == os.str());
 }
 
+TEST_CASE("is_based_ostream_test")
+{
+    static_assert(::sayan::is_based_on_ostream<std::ostream>::value, "");
+    static_assert(::sayan::is_based_on_ostream<std::ostream&>::value, "");
+    static_assert(::sayan::is_based_on_ostream<std::ostringstream>::value, "");
+
+    static_assert(!::sayan::is_based_on_ostream<std::ostream const>::value, "");
+    static_assert(!::sayan::is_based_on_ostream<int>::value, "");
+    static_assert(!::sayan::is_based_on_ostream<std::vector<int>>::value, "");
+
+    CHECK(::sayan::is_based_on_ostream<std::ostream>::value);
+    CHECK(::sayan::is_based_on_ostream<std::ostream&>::value);
+    CHECK(::sayan::is_based_on_ostream<std::ostringstream>::value);
+
+    CHECK_FALSE(::sayan::is_based_on_ostream<std::ostream const>::value);
+    CHECK_FALSE(::sayan::is_based_on_ostream<int>::value);
+    CHECK_FALSE(::sayan::is_based_on_ostream<std::vector<int>>::value);
+}
