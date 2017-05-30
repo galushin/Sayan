@@ -35,8 +35,10 @@
 			<Add directory="contrib/" />
 			<Add directory="../include" />
 		</Compiler>
+		<Unit filename="../include/sayan/cursor/istream.hpp" />
 		<Unit filename="../include/sayan/cursor/ostream.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="tests/istream.cpp" />
 		<Unit filename="tests/ostream.cpp" />
 		<Extensions>
 			<code_completion />
