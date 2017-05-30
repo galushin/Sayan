@@ -35,11 +35,15 @@
 			<Add directory="contrib/" />
 			<Add directory="../include" />
 		</Compiler>
+		<Unit filename="../include/sayan/algorithm.hpp" />
+		<Unit filename="../include/sayan/cursor/check_policies.hpp" />
+		<Unit filename="../include/sayan/cursor/defs.hpp" />
 		<Unit filename="../include/sayan/cursor/istream.hpp" />
 		<Unit filename="../include/sayan/cursor/ostream.hpp" />
 		<Unit filename="main.cpp" />
-		<Unit filename="tests/istream.cpp" />
-		<Unit filename="tests/ostream.cpp" />
+		<Unit filename="tests/algorithm/nonmodifying.cpp" />
+		<Unit filename="tests/cursor/istream.cpp" />
+		<Unit filename="tests/cursor/ostream.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

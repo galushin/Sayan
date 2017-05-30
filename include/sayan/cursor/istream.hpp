@@ -1,32 +1,13 @@
 #ifndef Z_SAYAN_CURSOR_ISTREAM_HPP_INCLUDED
 #define Z_SAYAN_CURSOR_ISTREAM_HPP_INCLUDED
 
-#include <stdexcept>
+#include <sayan/cursor/defs.hpp>
+#include <sayan/cursor/check_policies.hpp>
 
 namespace sayan
 {
 inline namespace v1
 {
-    struct front_fn {};
-
-    namespace
-    {
-        constexpr auto const & front = front_fn{};
-    }
-
-    struct cursor_checking_throw
-    {
-    public:
-        template <class Cursor>
-        static void ensure_not_empty(Cursor const & cur)
-        {
-            if(cur.empty())
-            {
-                throw std::logic_error("cursor must be not empty");
-            }
-        }
-    };
-
     template <class IStream, class Check = cursor_checking_throw>
     class istream_by_char_cursor
     {
