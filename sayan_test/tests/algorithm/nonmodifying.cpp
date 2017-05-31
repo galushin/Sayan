@@ -140,6 +140,7 @@ TEST_CASE("algorithms/nonmodifying/count_if")
     for(auto const & s : strs)
     {
         std::istringstream is(s);
+
         CHECK(::sayan::count_if(sayan::cursor(is), pred)
               == std::count_if(s.begin(), s.end(), pred));
     }
@@ -185,5 +186,24 @@ TEST_CASE("algorithms/nonmodifying/equal with predicate")
                              sayan::cursor(std::istringstream(y)), eq);
 
         CHECK(r_std == r_sayan);
+    }
+}
+
+TEST_CASE("algorithms/is_partitioned")
+{
+    std::vector<std::string> const strs{"", "generic", "AlexStepanov", "STL",
+                                        "STLauthor", "authorofSTL"};
+
+    auto const pred = [](char c) { return std::islower(c); };
+
+    for(auto s : strs)
+    {
+        CHECK(::sayan::is_partitioned(sayan::cursor(std::istringstream(s)), pred)
+              == std::is_partitioned(s.begin(), s.end(), pred));
+
+        std::partition(s.begin(), s.end(), pred);
+
+        CHECK(std::is_partitioned(s.begin(), s.end(), pred));
+        CHECK(::sayan::is_partitioned(sayan::cursor(std::istringstream(s)), pred));
     }
 }

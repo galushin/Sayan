@@ -75,7 +75,10 @@ inline namespace v1
 
         for(; !!cur; ++ cur)
         {
-            result += (pred(*cur) == true);
+            if(pred(*cur))
+            {
+                ++ result;
+            }
         }
 
         return result;
@@ -110,6 +113,15 @@ inline namespace v1
         auto r = ::sayan::mismatch(std::move(in1), std::move(in2), std::move(bin_pred));
 
         return !r.first && !r.second;
+    }
+
+    template <class InputCursor, class UnaryPredicate>
+    bool is_partitioned(InputCursor cur, UnaryPredicate pred)
+    {
+        cur = ::sayan::find_if_not(std::move(cur), pred);
+        cur = ::sayan::find_if(std::move(cur), pred);
+
+        return !cur;
     }
 }
 //namespace v1
