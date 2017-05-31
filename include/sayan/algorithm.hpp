@@ -9,6 +9,18 @@ namespace sayan
 {
 inline namespace v1
 {
+    template <class InputCursor, class UnaryFunction>
+    InputCursor
+    for_each(InputCursor cur, UnaryFunction fun)
+    {
+        for(; !!cur; ++ cur)
+        {
+            fun(*cur);
+        }
+
+        return cur;
+    }
+
     template <class InputCursor1, class InputCursor2,
               class BinaryPredicate = std::equal_to<>>
     std::pair<InputCursor1, InputCursor2>

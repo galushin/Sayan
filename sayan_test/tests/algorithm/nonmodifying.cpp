@@ -6,6 +6,19 @@
 
 #include <algorithm>
 
+TEST_CASE("algorithms/nonmodifying/for_each")
+{
+    std::string const src{"Alex Stepanov"};
+
+    std::string out;
+
+    auto cur = sayan::for_each(::sayan::cursor(std::istringstream(src)),
+                               [&out](char c){ out.push_back(c);});
+
+    CHECK(out == src);
+    CHECK(cur.empty());
+}
+
 TEST_CASE("algorithms/nonmodifying/equal")
 {
     std::vector<std::string> const strs
