@@ -8,13 +8,16 @@ namespace sayan
 {
 inline namespace v1
 {
-    template <class IStream, class Check = cursor_checking_throw>
+    template <class IStream,
+              class Check = cursor_checking_throw,
+              class Distance = std::ptrdiff_t>
     class istream_by_char_cursor
     {
     public:
         // Типы
         using value_type = typename std::decay_t<IStream>::char_type;
         using reference = value_type const &;
+        using difference_type = Distance;
 
         // Создание
         explicit istream_by_char_cursor(IStream && is)

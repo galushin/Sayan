@@ -67,6 +67,29 @@ inline namespace v1
         return !::sayan::any_of(std::move(cur), std::move(pred));
     }
 
+    template <class InputCursor, class UnaryPredicate>
+    typename ::sayan::cursor_traits<InputCursor>::difference_type
+    count_if(InputCursor cur, UnaryPredicate pred)
+    {
+        auto result = typename ::sayan::cursor_traits<InputCursor>::difference_type{0};
+
+        for(; !!cur; ++ cur)
+        {
+            result += (pred(*cur) == true);
+        }
+
+        return result;
+    }
+
+    template <class InputCursor, class T>
+    typename ::sayan::cursor_traits<InputCursor>::difference_type
+    count(InputCursor cur, T const & value)
+    {
+        using Ref = decltype(*cur);
+        return ::sayan::count_if(std::move(cur),
+                                 [&value](Ref x) { return x == value; });
+    }
+
     template <class InputCursor1, class InputCursor2,
               class BinaryPredicate = std::equal_to<>>
     std::pair<InputCursor1, InputCursor2>

@@ -70,6 +70,12 @@ inline namespace v1
         cur.drop(::sayan::front);
         return cur;
     }
+
+    template <class T>
+    struct cursor_traits
+    {
+        using difference_type = typename T::difference_type;
+    };
 }
 //inline namespace v1
 }

@@ -115,6 +115,36 @@ TEST_CASE("algorithms/nonmodifying/find_if_not: fail")
     CHECK(r.empty());
 }
 
+TEST_CASE("algorithms/nonmodifying/count")
+{
+    std::vector<std::string> const strs{"", "generic_programming",
+                                        "Alex Stepanov", "STL"};
+
+    auto const value = 'e';
+
+    for(auto const & s : strs)
+    {
+        std::istringstream is(s);
+        CHECK(::sayan::count(sayan::cursor(is), value)
+              == std::count(s.begin(), s.end(), value));
+    }
+}
+
+TEST_CASE("algorithms/nonmodifying/count_if")
+{
+    std::vector<std::string> const strs{"", "generic_programming",
+                                        "Alex Stepanov", "STL"};
+
+    auto const pred = [](char c) { return std::isupper(c); };
+
+    for(auto const & s : strs)
+    {
+        std::istringstream is(s);
+        CHECK(::sayan::count_if(sayan::cursor(is), pred)
+              == std::count_if(s.begin(), s.end(), pred));
+    }
+}
+
 TEST_CASE("algorithms/nonmodifying/equal")
 {
     std::vector<std::string> const strs
