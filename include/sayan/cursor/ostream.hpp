@@ -5,6 +5,8 @@
  @brief Курсор для потоков вывода
 */
 
+#include <sayan/cursor/defs.hpp>
+
 #include <utility>
 #include <iosfwd>
 
