@@ -6,6 +6,24 @@
 
 #include <algorithm>
 
+TEST_CASE("algorithms/nonmodifying/quantors: all_of, any_of, some_of")
+{
+    std::vector<std::string> const strs{"", "generic_programming",
+                                        "Alex Stepanov", "STL"};
+
+    auto const pred = [](char c) { return std::isupper(c); };
+
+    for(auto const & s : strs)
+    {
+        CHECK(::sayan::all_of(sayan::cursor(std::istringstream(s)), pred)
+              == std::all_of(s.begin(), s.end(), pred));
+        CHECK(::sayan::any_of(sayan::cursor(std::istringstream(s)), pred)
+              == std::any_of(s.begin(), s.end(), pred));
+        CHECK(::sayan::none_of(sayan::cursor(std::istringstream(s)), pred)
+              == std::none_of(s.begin(), s.end(), pred));
+    }
+}
+
 TEST_CASE("algorithms/nonmodifying/for_each")
 {
     std::string const src{"Alex Stepanov"};
@@ -17,6 +35,84 @@ TEST_CASE("algorithms/nonmodifying/for_each")
 
     CHECK(out == src);
     CHECK(cur.empty());
+}
+
+TEST_CASE("algorithms/nonmodifying/find: success")
+{
+    std::string const src{"Alex Stepanov"};
+
+    auto const value = 'e';
+
+    auto const r_std = std::find(src.begin(), src.end(), value);
+
+    CHECK((r_std != src.end()));
+
+    std::istringstream is(src);
+
+    auto const r = sayan::find(sayan::cursor(is), value);
+
+    CHECK(!r.empty());
+
+    std::string rest;
+    sayan::for_each(r, [&rest](char c){ rest.push_back(c);});
+
+    CHECK(rest == std::string(r_std, src.end()));
+}
+
+TEST_CASE("algorithms/nonmodifying/find: fail")
+{
+    std::string const src{"Alex Stepanov"};
+
+    auto const value = 'z';
+
+    auto const r_std = std::find(src.begin(), src.end(), value);
+
+    CHECK((r_std == src.end()));
+
+    std::istringstream is(src);
+
+    auto const r = sayan::find(sayan::cursor(is), value);
+
+    CHECK(r.empty());
+}
+
+TEST_CASE("algorithms/nonmodifying/find_if_not: success")
+{
+    std::string const src{"Alex Stepanov"};
+
+    auto const pred = [](char c) { return std::isupper(c); };
+
+    auto const r_std = std::find_if_not(src.begin(), src.end(), pred);
+
+    CHECK((r_std != src.end()));
+
+    std::istringstream is(src);
+
+    auto const r = sayan::find_if_not(sayan::cursor(is), pred);
+
+    CHECK(!r.empty());
+
+    std::string rest;
+    sayan::for_each(r, [&rest](char c){ rest.push_back(c);});
+
+    CHECK(rest == std::string(r_std, src.end()));
+}
+
+TEST_CASE("algorithms/nonmodifying/find_if_not: fail")
+{
+    std::string const src{"STL"};
+
+    auto const pred = [](char c) { return std::isupper(c); };
+
+    auto const r_std = std::find_if_not(src.begin(), src.end(), pred);
+
+    CHECK((r_std == src.end()));
+
+    std::istringstream is(src);
+
+    auto const r = sayan::find_if_not(sayan::cursor(is), pred);
+
+    CHECK(r.empty());
 }
 
 TEST_CASE("algorithms/nonmodifying/equal")

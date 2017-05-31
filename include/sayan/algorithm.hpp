@@ -21,6 +21,52 @@ inline namespace v1
         return cur;
     }
 
+    template <class InputCursor, class UnaryPredicate>
+    InputCursor
+    find_if(InputCursor cur, UnaryPredicate pred)
+    {
+        for(; !!cur && !pred(*cur); ++ cur)
+        {}
+
+        return cur;
+    }
+
+    template <class InputCursor, class UnaryPredicate>
+    InputCursor
+    find_if_not(InputCursor cur, UnaryPredicate pred)
+    {
+        using Ref = decltype(*cur);
+        return ::sayan::find_if(std::move(cur),
+                                [&pred](Ref x) { return !pred(x); });
+    }
+
+    template <class InputCursor, class T>
+    InputCursor
+    find(InputCursor cur, T const & value)
+    {
+        using Ref = decltype(*cur);
+        return ::sayan::find_if(std::move(cur),
+                                [&value](Ref x) { return x == value; });
+    }
+
+    template <class InputCursor, class UnaryPredicate>
+    bool all_of(InputCursor cur, UnaryPredicate pred)
+    {
+        return !::sayan::find_if_not(std::move(cur), std::move(pred));
+    }
+
+    template <class InputCursor, class UnaryPredicate>
+    bool any_of(InputCursor cur, UnaryPredicate pred)
+    {
+        return !!::sayan::find_if(std::move(cur), std::move(pred));
+    }
+
+    template <class InputCursor, class UnaryPredicate>
+    bool none_of(InputCursor cur, UnaryPredicate pred)
+    {
+        return !::sayan::any_of(std::move(cur), std::move(pred));
+    }
+
     template <class InputCursor1, class InputCursor2,
               class BinaryPredicate = std::equal_to<>>
     std::pair<InputCursor1, InputCursor2>
