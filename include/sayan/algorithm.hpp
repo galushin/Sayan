@@ -123,6 +123,50 @@ inline namespace v1
 
         return !cur;
     }
+
+    template <class InputCursor1, class InputCursor2,
+              class Compare = std::less<>>
+    bool includes(InputCursor1 in1, InputCursor2 in2, Compare cmp = Compare{})
+    {
+        for(; !!in1 && !!in2;)
+        {
+            if(cmp(*in1, *in2))
+            {
+                ++ in1;
+            }
+            else if(cmp(*in2, *in1))
+            {
+                return false;
+            }
+            else
+            {
+                ++ in1;
+                ++ in2;
+            }
+        }
+
+        return !in2;
+    }
+
+    template <class InputCursor1, class InputCursor2,
+              class Compare = std::less<>>
+    bool lexicographical_compare(InputCursor1 in1, InputCursor2 in2,
+                                 Compare cmp = Compare{})
+    {
+        for(; !!in1 && !!in2; ++ in1, ++ in2)
+        {
+            if(cmp(*in1, *in2))
+            {
+                return true;
+            }
+            else if(cmp(*in2, *in1))
+            {
+                return false;
+            }
+        }
+
+        return !!in2;
+    }
 }
 //namespace v1
 }

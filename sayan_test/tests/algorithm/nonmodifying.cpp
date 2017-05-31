@@ -207,3 +207,102 @@ TEST_CASE("algorithms/is_partitioned")
         CHECK(::sayan::is_partitioned(sayan::cursor(std::istringstream(s)), pred));
     }
 }
+
+TEST_CASE("algorithms/lexicographical_compare")
+{
+    std::vector<std::string> const strs{"", "abc", "abcd", "acbd", "aBCd"};
+
+    for(auto const & s1 : strs)
+    for(auto const & s2 : strs)
+    {
+        auto const r_std = std::lexicographical_compare(s1.begin(), s1.end(),
+                                                        s2.begin(), s2.end());
+
+        std::istringstream is1(s1);
+        std::istringstream is2(s2);
+
+        auto const r_sayan =
+            ::sayan::lexicographical_compare(::sayan::cursor(is1),
+                                             ::sayan::cursor(is2));
+
+        CHECK(r_std == r_sayan);
+    }
+}
+
+TEST_CASE("algorithms/lexicographical_compare with custom compare")
+{
+    std::vector<std::string> const strs{"", "abc", "abcd", "acbd", "aBCd"};
+
+    auto const cmp
+        = [](char x, char y) { return std::toupper(x) < std::toupper(y); };
+
+    for(auto const & s1 : strs)
+    for(auto const & s2 : strs)
+    {
+        auto const r_std = std::lexicographical_compare(s1.begin(), s1.end(),
+                                                        s2.begin(), s2.end(),
+                                                        cmp);
+
+        std::istringstream is1(s1);
+        std::istringstream is2(s2);
+
+        auto const r_sayan =
+            ::sayan::lexicographical_compare(::sayan::cursor(is1),
+                                             ::sayan::cursor(is2), cmp);
+
+        CHECK(r_std == r_sayan);
+    }
+}
+
+TEST_CASE("algorithms/set_operations/includes")
+{
+    std::vector<std::string> const strs{"", "abc", "abcd", "aabc"};
+
+    for(auto const & s : strs)
+    {
+        CHECK(std::is_sorted(s.begin(), s.end()));
+    }
+
+    for(auto const & s1 : strs)
+    for(auto const & s2 : strs)
+    {
+        auto const r_std = std::includes(s1.begin(), s1.end(),
+                                         s2.begin(), s2.end());
+
+        std::istringstream is1(s1);
+        std::istringstream is2(s2);
+
+        auto const r_sayan = ::sayan::includes(::sayan::cursor(is1),
+                                               ::sayan::cursor(is2));
+
+        CHECK(r_std == r_sayan);
+    }
+}
+
+TEST_CASE("algorithms/set_operations/includes: custom predicate")
+{
+    std::vector<std::string> const strs{"", "abc", "abcd", "aabc", "aAbC"};
+
+    auto const cmp
+        = [](char x, char y) { return std::toupper(x) < std::toupper(y); };
+
+    for(auto const & s : strs)
+    {
+        CHECK(std::is_sorted(s.begin(), s.end(), cmp));
+    }
+
+    for(auto const & s1 : strs)
+    for(auto const & s2 : strs)
+    {
+        auto const r_std = std::includes(s1.begin(), s1.end(),
+                                         s2.begin(), s2.end(), cmp);
+
+        std::istringstream is1(s1);
+        std::istringstream is2(s2);
+
+        auto const r_sayan = ::sayan::includes(::sayan::cursor(is1),
+                                               ::sayan::cursor(is2), cmp);
+
+        CHECK(r_std == r_sayan);
+    }
+}
