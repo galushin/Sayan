@@ -1,7 +1,10 @@
 #ifndef Z_URAL_CURSOR_DEFS_HPP_INCLUDED
 #define Z_URAL_CURSOR_DEFS_HPP_INCLUDED
 
+#include <sayan/utility/static_const.hpp>
+
 #include <type_traits>
+#include <utility>
 
 namespace sayan
 {
@@ -11,7 +14,7 @@ inline namespace v1
 
     namespace
     {
-        constexpr auto const & front = front_fn{};
+        constexpr auto const & front = static_const<front_fn>;
     }
 
     /// @cond false
@@ -71,11 +74,20 @@ inline namespace v1
         return cur;
     }
 
+    template <class Cursor, class = std::enable_if_t<is_cursor<Cursor>::value>>
+    Cursor cursor(Cursor cur)
+    {
+        return cur;
+    }
+
     template <class T>
     struct cursor_traits
     {
         using difference_type = typename T::difference_type;
     };
+
+    template <class T>
+    using difference_type_t = typename cursor_traits<T>::difference_type;
 }
 //inline namespace v1
 }
