@@ -239,6 +239,34 @@ inline namespace v1
         }
     };
 
+    struct fill_fn
+    {
+        template <class OutputRange, class T>
+        void operator()(OutputRange && out, T const & value) const
+        {
+            auto cur = sayan::cursor(std::forward<OutputRange>(out));
+
+            for(; !!cur; ++ cur)
+            {
+                *cur = value;
+            }
+        }
+    };
+
+    struct generate_fn
+    {
+        template <class OutputRange, class Generator>
+        void operator()(OutputRange && out, Generator gen) const
+        {
+            auto cur = sayan::cursor(std::forward<OutputRange>(out));
+
+            for(; !!cur; ++ cur)
+            {
+                *cur = gen();
+            }
+        }
+    };
+
     namespace
     {
         constexpr auto const & all_of = static_const<all_of_fn>;
@@ -256,6 +284,9 @@ inline namespace v1
         constexpr auto const & find = static_const<find_fn>;
         constexpr auto const & find_if = static_const<find_if_fn>;
         constexpr auto const & find_if_not = static_const<find_if_not_fn>;
+
+        constexpr auto const & fill = static_const<fill_fn>;
+        constexpr auto const & generate = static_const<generate_fn>;
 
         constexpr auto const & is_partitioned = static_const<is_partitioned_fn>;
 

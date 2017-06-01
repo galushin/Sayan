@@ -3,6 +3,7 @@
 
 // Курсоры, которые создаются автоматически
 #include <sayan/cursor/istream.hpp>
+#include <sayan/cursor/iterator_cursor.hpp>
 #include <sayan/cursor/ostream.hpp>
 
 #include <sayan/utility/static_const.hpp>
