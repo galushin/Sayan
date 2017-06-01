@@ -2,7 +2,7 @@
 #define Z_SAYAN_ALGORITHM_HPP_INCLUDED
 
 #include <sayan/cursor/defs.hpp>
-#include <sayan/cursor/range_to_cursor.hpp>
+#include <sayan/cursor/sequence_to_cursor.hpp>
 
 #include <functional>
 
@@ -12,11 +12,11 @@ inline namespace v1
 {
     struct for_each_fn
     {
-        template <class InputRange, class UnaryFunction>
-        safe_cursor_type_t<InputRange>
-        operator()(InputRange && in, UnaryFunction fun) const
+        template <class InputSequence, class UnaryFunction>
+        safe_cursor_type_t<InputSequence>
+        operator()(InputSequence && in, UnaryFunction fun) const
         {
-            auto cur = sayan::cursor(std::forward<InputRange>(in));
+            auto cur = sayan::cursor(std::forward<InputSequence>(in));
 
             for(; !!cur; ++ cur)
             {
@@ -29,11 +29,11 @@ inline namespace v1
 
     struct find_if_fn
     {
-        template <class InputRange, class UnaryPredicate>
-        safe_cursor_type_t<InputRange>
-        operator()(InputRange && in, UnaryPredicate pred) const
+        template <class InputSequence, class UnaryPredicate>
+        safe_cursor_type_t<InputSequence>
+        operator()(InputSequence && in, UnaryPredicate pred) const
         {
-            auto cur = ::sayan::cursor(std::forward<InputRange>(in));
+            auto cur = ::sayan::cursor(std::forward<InputSequence>(in));
 
             for(; !!cur && !pred(*cur); ++ cur)
             {}
@@ -44,11 +44,11 @@ inline namespace v1
 
     struct find_if_not_fn
     {
-        template <class InputRange, class UnaryPredicate>
-        safe_cursor_type_t<InputRange>
-        operator()(InputRange && in, UnaryPredicate pred) const
+        template <class InputSequence, class UnaryPredicate>
+        safe_cursor_type_t<InputSequence>
+        operator()(InputSequence && in, UnaryPredicate pred) const
         {
-            auto cur = ::sayan::cursor(std::forward<InputRange>(in));
+            auto cur = ::sayan::cursor(std::forward<InputSequence>(in));
 
             using Ref = decltype(*cur);
             return ::sayan::find_if_fn{}(std::move(cur),
@@ -58,11 +58,11 @@ inline namespace v1
 
     struct find_fn
     {
-        template <class InputRange, class T>
-        safe_cursor_type_t<InputRange>
-        operator()(InputRange && in, T const & value) const
+        template <class InputSequence, class T>
+        safe_cursor_type_t<InputSequence>
+        operator()(InputSequence && in, T const & value) const
         {
-            auto cur = sayan::cursor(std::forward<InputRange>(in));
+            auto cur = sayan::cursor(std::forward<InputSequence>(in));
 
             using Ref = decltype(*cur);
             return ::sayan::find_if_fn{}(std::move(cur),
@@ -72,43 +72,43 @@ inline namespace v1
 
     struct all_of_fn
     {
-        template <class InputRange, class UnaryPredicate>
-        bool operator()(InputRange && in, UnaryPredicate pred) const
+        template <class InputSequence, class UnaryPredicate>
+        bool operator()(InputSequence && in, UnaryPredicate pred) const
         {
-            return !::sayan::find_if_not_fn{}(std::forward<InputRange>(in),
+            return !::sayan::find_if_not_fn{}(std::forward<InputSequence>(in),
                                               std::move(pred));
         }
     };
 
     struct any_of_fn
     {
-        template <class InputRange, class UnaryPredicate>
-        bool operator()(InputRange && in, UnaryPredicate pred) const
+        template <class InputSequence, class UnaryPredicate>
+        bool operator()(InputSequence && in, UnaryPredicate pred) const
         {
-            return !!::sayan::find_if_fn{}(std::forward<InputRange>(in),
+            return !!::sayan::find_if_fn{}(std::forward<InputSequence>(in),
                                            std::move(pred));
         }
     };
 
     struct none_of_fn
     {
-        template <class InputRange, class UnaryPredicate>
-        bool operator()(InputRange && in, UnaryPredicate pred) const
+        template <class InputSequence, class UnaryPredicate>
+        bool operator()(InputSequence && in, UnaryPredicate pred) const
         {
-            return !::sayan::any_of_fn{}(std::forward<InputRange>(in),
+            return !::sayan::any_of_fn{}(std::forward<InputSequence>(in),
                                          std::move(pred));
         }
     };
 
     struct count_if_fn
     {
-        template <class InputRange, class UnaryPredicate>
-        difference_type_t<safe_cursor_type_t<InputRange>>
-        operator()(InputRange && in, UnaryPredicate pred) const
+        template <class InputSequence, class UnaryPredicate>
+        difference_type_t<safe_cursor_type_t<InputSequence>>
+        operator()(InputSequence && in, UnaryPredicate pred) const
         {
-            auto result = difference_type_t<safe_cursor_type_t<InputRange>>{0};
+            auto result = difference_type_t<safe_cursor_type_t<InputSequence>>{0};
 
-            auto cur = sayan::cursor(std::forward<InputRange>(in));
+            auto cur = sayan::cursor(std::forward<InputSequence>(in));
 
             for(; !!cur; ++ cur)
             {
@@ -124,11 +124,11 @@ inline namespace v1
 
     struct count_fn
     {
-        template <class InputRange, class T>
-        difference_type_t<safe_cursor_type_t<InputRange>>
-        operator()(InputRange && in, T const & value) const
+        template <class InputSequence, class T>
+        difference_type_t<safe_cursor_type_t<InputSequence>>
+        operator()(InputSequence && in, T const & value) const
         {
-            auto cur = ::sayan::cursor(std::forward<InputRange>(in));
+            auto cur = ::sayan::cursor(std::forward<InputSequence>(in));
 
             using Ref = decltype(*cur);
             return ::sayan::count_if_fn{}(std::move(cur),
@@ -138,14 +138,14 @@ inline namespace v1
 
     struct mismatch_fn
     {
-        template <class InputRange1, class InputRange2,
+        template <class InputSequence1, class InputSequence2,
                   class BinaryPredicate = std::equal_to<>>
-        std::pair<safe_cursor_type_t<InputRange1>, safe_cursor_type_t<InputRange2>>
-        operator()(InputRange1 && in1, InputRange2 && in2,
+        std::pair<safe_cursor_type_t<InputSequence1>, safe_cursor_type_t<InputSequence2>>
+        operator()(InputSequence1 && in1, InputSequence2 && in2,
                    BinaryPredicate bin_pred = BinaryPredicate{}) const
         {
-            auto cur1 = sayan::cursor(std::forward<InputRange1>(in1));
-            auto cur2 = sayan::cursor(std::forward<InputRange2>(in2));
+            auto cur1 = sayan::cursor(std::forward<InputSequence1>(in1));
+            auto cur2 = sayan::cursor(std::forward<InputSequence2>(in2));
 
             for(; !!cur1 && !!cur2 && bin_pred(*cur1, *cur2); ++cur1, ++cur2)
             {}
@@ -156,13 +156,13 @@ inline namespace v1
 
     struct equal_fn
     {
-        template <class InputRange1, class InputRange2,
+        template <class InputSequence1, class InputSequence2,
                   class BinaryPredicate = std::equal_to<>>
-        bool operator()(InputRange1 && in1, InputRange2 && in2,
+        bool operator()(InputSequence1 && in1, InputSequence2 && in2,
                         BinaryPredicate bin_pred = BinaryPredicate{}) const
         {
-            auto r = ::sayan::mismatch_fn{}(std::forward<InputRange1>(in1),
-                                            std::forward<InputRange2>(in2),
+            auto r = ::sayan::mismatch_fn{}(std::forward<InputSequence1>(in1),
+                                            std::forward<InputSequence2>(in2),
                                             std::move(bin_pred));
 
             return !r.first && !r.second;
@@ -171,10 +171,10 @@ inline namespace v1
 
     struct is_partitioned_fn
     {
-        template <class InputRange, class UnaryPredicate>
-        bool operator()(InputRange && in, UnaryPredicate pred) const
+        template <class InputSequence, class UnaryPredicate>
+        bool operator()(InputSequence && in, UnaryPredicate pred) const
         {
-            auto cur = ::sayan::find_if_not_fn{}(std::forward<InputRange>(in),
+            auto cur = ::sayan::find_if_not_fn{}(std::forward<InputSequence>(in),
                                                  pred);
             cur = ::sayan::find_if_fn{}(std::move(cur), pred);
 
@@ -184,13 +184,13 @@ inline namespace v1
 
     struct includes_fn
     {
-        template <class InputRange1, class InputRange2,
+        template <class InputSequence1, class InputSequence2,
                   class Compare = std::less<>>
-        bool operator()(InputRange1 && in1, InputRange2 && in2,
+        bool operator()(InputSequence1 && in1, InputSequence2 && in2,
                         Compare cmp = Compare{}) const
         {
-            auto cur1 = sayan::cursor(std::forward<InputRange1>(in1));
-            auto cur2 = sayan::cursor(std::forward<InputRange2>(in2));
+            auto cur1 = sayan::cursor(std::forward<InputSequence1>(in1));
+            auto cur2 = sayan::cursor(std::forward<InputSequence2>(in2));
 
             for(; !!cur1 && !!cur2;)
             {
@@ -215,13 +215,13 @@ inline namespace v1
 
     struct lexicographical_compare_fn
     {
-        template <class InputRange1, class InputRange2,
+        template <class InputSequence1, class InputSequence2,
                   class Compare = std::less<>>
-        bool operator()(InputRange1 && in1, InputRange2 && in2,
+        bool operator()(InputSequence1 && in1, InputSequence2 && in2,
                         Compare cmp = Compare{}) const
         {
-            auto cur1 = sayan::cursor(std::forward<InputRange1>(in1));
-            auto cur2 = sayan::cursor(std::forward<InputRange2>(in2));
+            auto cur1 = sayan::cursor(std::forward<InputSequence1>(in1));
+            auto cur2 = sayan::cursor(std::forward<InputSequence2>(in2));
 
             for(; !!cur1 && !!cur2; ++ cur1, ++ cur2)
             {
@@ -241,10 +241,10 @@ inline namespace v1
 
     struct fill_fn
     {
-        template <class OutputRange, class T>
-        void operator()(OutputRange && out, T const & value) const
+        template <class OutputSequence, class T>
+        void operator()(OutputSequence && out, T const & value) const
         {
-            auto cur = sayan::cursor(std::forward<OutputRange>(out));
+            auto cur = sayan::cursor(std::forward<OutputSequence>(out));
 
             for(; !!cur; ++ cur)
             {
@@ -255,10 +255,10 @@ inline namespace v1
 
     struct generate_fn
     {
-        template <class OutputRange, class Generator>
-        void operator()(OutputRange && out, Generator gen) const
+        template <class OutputSequence, class Generator>
+        void operator()(OutputSequence && out, Generator gen) const
         {
-            auto cur = sayan::cursor(std::forward<OutputRange>(out));
+            auto cur = sayan::cursor(std::forward<OutputSequence>(out));
 
             for(; !!cur; ++ cur)
             {
