@@ -10,7 +10,7 @@
 namespace sayan
 {
     template <class T>
-    constexpr T const static_const{};
+    constexpr auto const & static_const = T{};
 }
 // namespace sayan
 

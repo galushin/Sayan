@@ -32,9 +32,9 @@ OBJDIR_RELEASE = ./obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = ./bin/Release/sayan_test
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/tests/algorithm/nonmodifying.o $(OBJDIR_DEBUG)/tests/cursor/istream.o $(OBJDIR_DEBUG)/tests/cursor/ostream.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/tests/algorithm/modifying.o $(OBJDIR_DEBUG)/tests/algorithm/nonmodifying.o $(OBJDIR_DEBUG)/tests/cursor/istream.o $(OBJDIR_DEBUG)/tests/cursor/ostream.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/tests/algorithm/nonmodifying.o $(OBJDIR_RELEASE)/tests/cursor/istream.o $(OBJDIR_RELEASE)/tests/cursor/ostream.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/tests/algorithm/modifying.o $(OBJDIR_RELEASE)/tests/algorithm/nonmodifying.o $(OBJDIR_RELEASE)/tests/cursor/istream.o $(OBJDIR_RELEASE)/tests/cursor/ostream.o
 
 all: debug release
 
@@ -55,6 +55,9 @@ out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 
 $(OBJDIR_DEBUG)/main.o: main.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c main.cpp -o $(OBJDIR_DEBUG)/main.o
+
+$(OBJDIR_DEBUG)/tests/algorithm/modifying.o: tests/algorithm/modifying.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tests/algorithm/modifying.cpp -o $(OBJDIR_DEBUG)/tests/algorithm/modifying.o
 
 $(OBJDIR_DEBUG)/tests/algorithm/nonmodifying.o: tests/algorithm/nonmodifying.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tests/algorithm/nonmodifying.cpp -o $(OBJDIR_DEBUG)/tests/algorithm/nonmodifying.o
@@ -87,6 +90,9 @@ out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 
 $(OBJDIR_RELEASE)/main.o: main.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c main.cpp -o $(OBJDIR_RELEASE)/main.o
+
+$(OBJDIR_RELEASE)/tests/algorithm/modifying.o: tests/algorithm/modifying.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tests/algorithm/modifying.cpp -o $(OBJDIR_RELEASE)/tests/algorithm/modifying.o
 
 $(OBJDIR_RELEASE)/tests/algorithm/nonmodifying.o: tests/algorithm/nonmodifying.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tests/algorithm/nonmodifying.cpp -o $(OBJDIR_RELEASE)/tests/algorithm/nonmodifying.o

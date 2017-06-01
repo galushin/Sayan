@@ -3,6 +3,7 @@
 
 // Курсоры, которые создаются автоматически
 #include <sayan/cursor/istream.hpp>
+#include <sayan/cursor/iterator_cursor.hpp>
 #include <sayan/cursor/ostream.hpp>
 
 #include <sayan/utility/static_const.hpp>
@@ -14,19 +15,19 @@ inline namespace v1
     /// @cond false
     namespace details
     {
-        template <class Range>
-        using cursor_type_t = decltype(cursor(std::declval<Range&&>()));
+        template <class Sequence>
+        using cursor_type_t = decltype(cursor(std::declval<Sequence&&>()));
 
         struct cursor_fn
         {
         public:
-            template <class Range>
+            template <class Sequence>
             constexpr
-            cursor_type_t<Range>
-            operator()(Range && r) const
-            noexcept(noexcept(cursor(std::forward<Range>(r))))
+            cursor_type_t<Sequence>
+            operator()(Sequence && r) const
+            noexcept(noexcept(cursor(std::forward<Sequence>(r))))
             {
-                return cursor(std::forward<Range>(r));
+                return cursor(std::forward<Sequence>(r));
             }
 
         };
@@ -34,11 +35,11 @@ inline namespace v1
     // namespace datails
     // @endcond
 
-    template <class Range>
-    using cursor_type_t = details::cursor_type_t<Range>;
+    template <class Sequence>
+    using cursor_type_t = details::cursor_type_t<Sequence>;
 
-    template <class Range>
-    using safe_cursor_type_t = cursor_type_t<Range>;
+    template <class Sequence>
+    using safe_cursor_type_t = cursor_type_t<Sequence>;
 
     namespace
     {
