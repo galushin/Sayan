@@ -1,4 +1,4 @@
-#include <sayan/cursor/istream.hpp>
+#include <sayan/cursor/sequence_to_cursor.hpp>
 
 #include <catch/catch.hpp>
 

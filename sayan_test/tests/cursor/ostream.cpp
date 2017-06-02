@@ -1,4 +1,4 @@
-#include <sayan/cursor/ostream.hpp>
+#include <sayan/cursor/sequence_to_cursor.hpp>
 
 #include <catch/catch.hpp>
 
@@ -26,7 +26,7 @@ TEST_CASE("ostream_cursor range-for copy with delimiter")
     std::vector<int> const src = {1, 2, 3, 4, 5};
     std::ostringstream os;
 
-    auto out = ::sayan::cursor(os, ", ");
+    auto out = ::sayan::ostream_cursor(os, ", ");
 
     for(auto const & x : src)
     {
