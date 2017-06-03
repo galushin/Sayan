@@ -5,6 +5,7 @@
 #include <sayan/cursor/sequence_to_cursor.hpp>
 
 #include <functional>
+#include <experimental/functional>
 
 namespace sayan
 {
@@ -16,7 +17,7 @@ inline namespace v1
         safe_cursor_type_t<InputSequence>
         operator()(InputSequence && in, UnaryFunction fun) const
         {
-            auto cur = sayan::cursor(std::forward<InputSequence>(in));
+            auto cur = sayan::cursor_fwd<InputSequence>(in);
 
             for(; !!cur; ++ cur)
             {
@@ -33,7 +34,7 @@ inline namespace v1
         safe_cursor_type_t<InputSequence>
         operator()(InputSequence && in, UnaryPredicate pred) const
         {
-            auto cur = ::sayan::cursor(std::forward<InputSequence>(in));
+            auto cur = ::sayan::cursor_fwd<InputSequence>(in);
 
             for(; !!cur && !pred(*cur); ++ cur)
             {}
@@ -48,11 +49,10 @@ inline namespace v1
         safe_cursor_type_t<InputSequence>
         operator()(InputSequence && in, UnaryPredicate pred) const
         {
-            auto cur = ::sayan::cursor(std::forward<InputSequence>(in));
+            auto cur = ::sayan::cursor_fwd<InputSequence>(in);
 
-            using Ref = decltype(*cur);
             return ::sayan::find_if_fn{}(std::move(cur),
-                                         [&pred](Ref x) { return !pred(x); });
+                                         std::experimental::not_fn(std::move(pred)));
         }
     };
 
@@ -62,7 +62,7 @@ inline namespace v1
         safe_cursor_type_t<InputSequence>
         operator()(InputSequence && in, T const & value) const
         {
-            auto cur = sayan::cursor(std::forward<InputSequence>(in));
+            auto cur = sayan::cursor_fwd<InputSequence>(in);
 
             using Ref = decltype(*cur);
             return ::sayan::find_if_fn{}(std::move(cur),
@@ -108,7 +108,7 @@ inline namespace v1
         {
             auto result = difference_type_t<safe_cursor_type_t<InputSequence>>{0};
 
-            auto cur = sayan::cursor(std::forward<InputSequence>(in));
+            auto cur = sayan::cursor_fwd<InputSequence>(in);
 
             for(; !!cur; ++ cur)
             {
@@ -128,7 +128,7 @@ inline namespace v1
         difference_type_t<safe_cursor_type_t<InputSequence>>
         operator()(InputSequence && in, T const & value) const
         {
-            auto cur = ::sayan::cursor(std::forward<InputSequence>(in));
+            auto cur = ::sayan::cursor_fwd<InputSequence>(in);
 
             using Ref = decltype(*cur);
             return ::sayan::count_if_fn{}(std::move(cur),
@@ -144,8 +144,8 @@ inline namespace v1
         operator()(InputSequence1 && in1, InputSequence2 && in2,
                    BinaryPredicate bin_pred = BinaryPredicate{}) const
         {
-            auto cur1 = sayan::cursor(std::forward<InputSequence1>(in1));
-            auto cur2 = sayan::cursor(std::forward<InputSequence2>(in2));
+            auto cur1 = sayan::cursor_fwd<InputSequence1>(in1);
+            auto cur2 = sayan::cursor_fwd<InputSequence2>(in2);
 
             for(; !!cur1 && !!cur2 && bin_pred(*cur1, *cur2); ++cur1, ++cur2)
             {}
@@ -189,8 +189,8 @@ inline namespace v1
         bool operator()(InputSequence1 && in1, InputSequence2 && in2,
                         Compare cmp = Compare{}) const
         {
-            auto cur1 = sayan::cursor(std::forward<InputSequence1>(in1));
-            auto cur2 = sayan::cursor(std::forward<InputSequence2>(in2));
+            auto cur1 = sayan::cursor_fwd<InputSequence1>(in1);
+            auto cur2 = sayan::cursor_fwd<InputSequence2>(in2);
 
             for(; !!cur1 && !!cur2;)
             {
@@ -220,8 +220,8 @@ inline namespace v1
         bool operator()(InputSequence1 && in1, InputSequence2 && in2,
                         Compare cmp = Compare{}) const
         {
-            auto cur1 = sayan::cursor(std::forward<InputSequence1>(in1));
-            auto cur2 = sayan::cursor(std::forward<InputSequence2>(in2));
+            auto cur1 = sayan::cursor_fwd<InputSequence1>(in1);
+            auto cur2 = sayan::cursor_fwd<InputSequence2>(in2);
 
             for(; !!cur1 && !!cur2; ++ cur1, ++ cur2)
             {
@@ -239,12 +239,74 @@ inline namespace v1
         }
     };
 
+    struct copy_fn
+    {
+        template <class InputSequence, class OutputSequence>
+        std::pair<safe_cursor_type_t<InputSequence>,
+                  safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence && in, OutputSequence && out) const
+        {
+            auto in_cur = sayan::cursor_fwd<InputSequence>(in);
+            auto out_cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in_cur && !!out_cur; ++ in_cur)
+            {
+                out_cur << *in_cur;
+            }
+
+            return {std::move(in_cur), std::move(out_cur)};
+        }
+    };
+
+    struct transform_fn
+    {
+        template <class InputSequence, class OutputSequence, class UnaryFunction>
+        std::pair<safe_cursor_type_t<InputSequence>,
+                  safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence && in, OutputSequence && out,
+                   UnaryFunction f) const
+        {
+            auto in_cur = sayan::cursor_fwd<InputSequence>(in);
+            auto out_cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in_cur && !!out_cur; ++ in_cur)
+            {
+                out_cur << f(*in_cur);
+            }
+
+            return {std::move(in_cur), std::move(out_cur)};
+        }
+
+        template <class InputSequence1, class InputSequence2,
+                    class OutputSequence, class BinaryFunction>
+        std::tuple<safe_cursor_type_t<InputSequence1>,
+                   safe_cursor_type_t<InputSequence2>,
+                   safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence1 && in1, InputSequence2 && in2,
+                   OutputSequence && out, BinaryFunction fun) const
+        {
+            auto in1_cur = sayan::cursor_fwd<InputSequence1>(in1);
+            auto in2_cur = sayan::cursor_fwd<InputSequence2>(in2);
+            auto out_cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in1_cur && !!in2_cur && !!out_cur; ++ in1_cur, ++ in2_cur)
+            {
+                out_cur << fun(*in1_cur, *in2_cur);
+            }
+
+            using Result = std::tuple<safe_cursor_type_t<InputSequence1>,
+                                      safe_cursor_type_t<InputSequence2>,
+                                      safe_cursor_type_t<OutputSequence>>;
+            return Result{std::move(in1_cur), std::move(in2_cur), std::move(out_cur)};
+        }
+    };
+
     struct fill_fn
     {
         template <class OutputSequence, class T>
         void operator()(OutputSequence && out, T const & value) const
         {
-            auto cur = sayan::cursor(std::forward<OutputSequence>(out));
+            auto cur = sayan::cursor_fwd<OutputSequence>(out);
 
             for(; !!cur; ++ cur)
             {
@@ -258,12 +320,68 @@ inline namespace v1
         template <class OutputSequence, class Generator>
         void operator()(OutputSequence && out, Generator gen) const
         {
-            auto cur = sayan::cursor(std::forward<OutputSequence>(out));
+            auto cur = sayan::cursor_fwd<OutputSequence>(out);
 
             for(; !!cur; ++ cur)
             {
                 *cur = gen();
             }
+        }
+    };
+
+    struct copy_if_fn
+    {
+        template <class InputSequence, class OutputSequence,
+                  class UnaryPredicate>
+        std::pair<safe_cursor_type_t<InputSequence>,
+                  safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence && in,
+                   OutputSequence && out, UnaryPredicate pred) const
+        {
+            auto in_cur = ::sayan::cursor_fwd<InputSequence>(in);
+            auto out_cur = ::sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in_cur && !!out_cur; ++ in_cur)
+            {
+                if(pred(*in_cur))
+                {
+                    out_cur << *in_cur;
+                }
+            }
+
+            return {std::move(in_cur), std::move(out_cur)};
+        }
+    };
+
+    struct remove_copy_if_fn
+    {
+        template <class InputSequence, class OutputSequence,
+                  class UnaryPredicate>
+        std::pair<safe_cursor_type_t<InputSequence>,
+                  safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence && in,
+                   OutputSequence && out, UnaryPredicate pred) const
+        {
+            return ::sayan::copy_if_fn{}(std::forward<InputSequence>(in),
+                                         std::forward<OutputSequence>(out),
+                                         std::experimental::not_fn(std::move(pred)));
+        }
+    };
+
+    struct remove_copy_fn
+    {
+        template <class InputSequence, class OutputSequence, class T>
+        std::pair<safe_cursor_type_t<InputSequence>,
+                  safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence && in,
+                   OutputSequence && out, T const  & value) const
+        {
+            auto in_cur = ::sayan::cursor_fwd<InputSequence>(in);
+            using Ref = decltype(*in_cur);
+
+            return remove_copy_if_fn{}(std::move(in_cur),
+                                       std::forward<OutputSequence>(out),
+                                       [&value](Ref x) { return x == value; });
         }
     };
 
@@ -285,8 +403,16 @@ inline namespace v1
         constexpr auto const & find_if = static_const<find_if_fn>;
         constexpr auto const & find_if_not = static_const<find_if_not_fn>;
 
+        constexpr auto const & copy = static_const<copy_fn>;
+        constexpr auto const & copy_if = static_const<copy_if_fn>;
+
+        constexpr auto const & transform = static_const<transform_fn>;
+
         constexpr auto const & fill = static_const<fill_fn>;
         constexpr auto const & generate = static_const<generate_fn>;
+
+        constexpr auto const & remove_copy = static_const<remove_copy_fn>;
+        constexpr auto const & remove_copy_if = static_const<remove_copy_if_fn>;
 
         constexpr auto const & is_partitioned = static_const<is_partitioned_fn>;
 
