@@ -23,11 +23,26 @@ inline namespace v1
         return Cursor{std::forward<Range>(r).begin(), std::forward<Range>(r).end()};
     }
 
-    template <class Sequence>
-    auto cursor(Sequence && seq)
+    namespace details
     {
         using sayan::cursor_hook;
-        return cursor_hook(std::forward<Sequence>(seq), adl_tag{});
+
+        struct cursor_fn
+        {
+            template <class Sequence>
+            auto operator()(Sequence && seq) const
+            noexcept(noexcept(cursor_hook(std::forward<Sequence>(seq), adl_tag{})))
+            -> decltype(cursor_hook(std::forward<Sequence>(seq), adl_tag{}))
+            {
+                return cursor_hook(std::forward<Sequence>(seq), adl_tag{});
+            }
+        };
+    }
+    // namespace details
+
+    namespace
+    {
+        constexpr auto const & cursor = static_const<details::cursor_fn>;
     }
 
     template <class Sequence>
