@@ -1,5 +1,7 @@
 #include <sayan/algorithm.hpp>
 
+#include <sayan/cursor/back_inserter.hpp>
+
 #include <forward_list>
 #include <catch/catch.hpp>
 
@@ -71,6 +73,114 @@ TEST_CASE("algorithm/copy: to longer")
     CHECK(std::get<0>(result).end() == src.end());
 
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
+    CHECK(std::get<1>(result).end() == dest.end());
+}
+
+TEST_CASE("cursors/move")
+{
+    std::vector<int> const ns{1,2,3,5,8,13};
+    std::vector<std::unique_ptr<int>> src;
+    for(auto const & n : ns)
+    {
+        src.emplace_back(std::make_unique<int>(n));
+    }
+
+    std::vector<std::unique_ptr<int>> dest;
+    sayan::move(src, sayan::back_inserter(dest));
+
+    CHECK(std::all_of(src.begin(), src.end(),
+                      [](std::unique_ptr<int> const & p) { return !p;}));
+
+    std::vector<int> unptr;
+    for(auto const & p : dest)
+    {
+        CHECK(!!p);
+
+        unptr.emplace_back(*p);
+    }
+
+    CHECK(unptr == ns);
+}
+
+TEST_CASE("cursors/move: to longer")
+{
+    // Подготовка
+    std::vector<int> const ns{1,2,3,5,8,13};
+    std::vector<std::unique_ptr<int>> src;
+    for(auto const & n : ns)
+    {
+        src.emplace_back(std::make_unique<int>(n));
+    }
+
+    std::vector<std::unique_ptr<int>> dest(src.size() * 2);
+
+    CHECK(src.size() < dest.size());
+
+    // Выполнение алгоритма
+    auto const result = sayan::move(src, dest);
+
+    auto const dest_rest = std::get<1>(result);
+
+    // Проверки
+    auto const has_value = [](std::unique_ptr<int> const & p) { return !!p;};
+    CHECK(std::none_of(src.begin(), src.end(), has_value));
+
+    CHECK(std::all_of(dest.begin(), dest_rest.begin(), has_value));
+    CHECK(std::none_of(dest_rest.begin(), dest_rest.end(), has_value));
+
+    std::vector<int> dest_ns;
+    for(auto p = dest.begin(); p != dest_rest.begin(); ++ p)
+    {
+        dest_ns.push_back(**p);
+    }
+
+    CHECK(dest_ns == ns);
+
+    CHECK(std::get<0>(result).begin() == src.end());
+    CHECK(std::get<0>(result).end() == src.end());
+
+    CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
+    CHECK(std::get<1>(result).end() == dest.end());
+}
+
+TEST_CASE("cursors/move: to shorter")
+{
+    // Подготовка
+    std::vector<int> const ns{1,2,3,5,8,13,21,34};
+    std::vector<std::unique_ptr<int>> src;
+    for(auto const & n : ns)
+    {
+        src.emplace_back(std::make_unique<int>(n));
+    }
+
+    std::vector<std::unique_ptr<int>> dest(src.size() / 2);
+
+    CHECK(src.size() > dest.size());
+
+    // Выполнение алгоритма
+    auto const result = sayan::move(src, dest);
+
+    auto const src_rest = std::get<0>(result);
+
+    // Проверки
+    auto const has_value = [](std::unique_ptr<int> const & p) { return !!p;};
+    CHECK(std::none_of(src.begin(), src_rest.begin(), has_value));
+    CHECK(std::all_of(src_rest.begin(), src.end(), has_value));
+
+    CHECK(std::all_of(dest.begin(), dest.end(), has_value));
+
+    std::vector<int> dest_ns;
+    for(auto p = dest.begin(); p != dest.end(); ++ p)
+    {
+        dest_ns.push_back(**p);
+    }
+
+    CHECK(dest_ns == std::vector<int>(ns.begin(), ns.begin() + dest.size()));
+
+    CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
+    CHECK(std::get<0>(result).end() == src.end());
+
+    CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
 
@@ -511,5 +621,151 @@ TEST_CASE("algorithm/copy_if: to longer")
     CHECK(std::get<0>(result).end() == src.end());
 
     CHECK(std::get<1>(result).begin() == dest.begin() + r_std.size());
+    CHECK(std::get<1>(result).end() == dest.end());
+}
+
+TEST_CASE("algorithm/replace_copy")
+{
+    std::string const src{"Human readable name"};
+
+    auto const old_value = ' ';
+    auto const new_value = '_';
+
+    std::string r_std;
+    std::replace_copy(src.begin(), src.end(), std::back_inserter(r_std),
+                      old_value, new_value);
+
+    std::ostringstream os;
+    sayan::replace_copy(std::istringstream(src), os, old_value, new_value);
+
+    CHECK(os.str() == r_std);
+}
+
+TEST_CASE("algorithm/replace_copy: to longer")
+{
+    std::string const src{"Human readable name"};
+
+    auto const old_value = ' ';
+    auto const new_value = '_';
+
+    std::string dest_std(src.size() * 2, '*');
+    auto dest = dest_std;
+
+    CHECK(dest.size() > src.size());
+
+    // Выполнение
+    std::replace_copy(src.begin(), src.end(), dest_std.begin(),
+                      old_value, new_value);
+
+    auto result = sayan::replace_copy(src, dest, old_value, new_value);
+
+    // Проверки
+    CHECK(dest == dest_std);
+
+    CHECK(std::get<0>(result).begin() == src.end());
+    CHECK(std::get<0>(result).end() == src.end());
+
+    CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
+    CHECK(std::get<1>(result).end() == dest.end());
+}
+
+TEST_CASE("algorithm/replace_copy: to shorter")
+{
+    std::string const src{"Human readable name"};
+
+    auto const old_value = ' ';
+    auto const new_value = '_';
+
+    std::string dest(src.size() / 2, '*');
+    std::string dest_std;
+
+    CHECK(dest.size() < src.size());
+
+    // Выполнение
+    std::replace_copy(src.begin(), src.begin() + dest.size(),
+                      std::back_inserter(dest_std), old_value, new_value);
+
+    auto result = sayan::replace_copy(src, dest, old_value, new_value);
+
+    // Проверки
+    CHECK(dest == dest_std);
+
+    CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
+    CHECK(std::get<0>(result).end() == src.end());
+
+    CHECK(std::get<1>(result).begin() == dest.end());
+    CHECK(std::get<1>(result).end() == dest.end());
+}
+
+TEST_CASE("algorithm/replace_copy_if")
+{
+    std::string const src{"Human readable\tname"};
+
+    auto const new_value = '_';
+    auto pred = [](char x) { return std::isspace(x); };
+
+    std::string r_std;
+    std::replace_copy_if(src.begin(), src.end(), std::back_inserter(r_std),
+                      pred, new_value);
+
+    std::ostringstream os;
+    sayan::replace_copy_if(std::istringstream(src), os, pred, new_value);
+
+    CHECK(os.str() == r_std);
+}
+
+TEST_CASE("algorithm/replace_copy_if: to longer")
+{
+    std::string const src{"Human readable\tname"};
+
+    auto const new_value = '_';
+    auto pred = [](char x) { return std::isspace(x); };
+
+    std::string dest_std(src.size() * 2, '*');
+    auto dest = dest_std;
+
+    CHECK(dest.size() > src.size());
+
+    // Выполнение
+    std::replace_copy_if(src.begin(), src.end(), dest_std.begin(),
+                      pred, new_value);
+
+    auto result = sayan::replace_copy_if(src, dest, pred, new_value);
+
+    // Проверки
+    CHECK(dest == dest_std);
+
+    CHECK(std::get<0>(result).begin() == src.end());
+    CHECK(std::get<0>(result).end() == src.end());
+
+    CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
+    CHECK(std::get<1>(result).end() == dest.end());
+}
+
+TEST_CASE("algorithm/replace_copy_if: to shorter")
+{
+    std::string const src{"Human readable\tname"};
+
+    auto const new_value = '_';
+    auto pred = [](char x) { return std::isspace(x); };
+
+    std::string dest(src.size() / 2, '*');
+    std::string dest_std;
+
+    CHECK(dest.size() < src.size());
+
+    // Выполнение
+    std::replace_copy_if(src.begin(), src.begin() + dest.size(),
+                      std::back_inserter(dest_std), pred, new_value);
+
+    auto result = sayan::replace_copy_if(src, dest, pred, new_value);
+
+    // Проверки
+    CHECK(dest == dest_std);
+
+    CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
+    CHECK(std::get<0>(result).end() == src.end());
+
+    CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }

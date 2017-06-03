@@ -258,6 +258,25 @@ inline namespace v1
         }
     };
 
+    struct move_fn
+    {
+        template <class InputSequence, class OutputSequence>
+        std::pair<safe_cursor_type_t<InputSequence>,
+                  safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence && in, OutputSequence && out) const
+        {
+            auto in_cur = sayan::cursor_fwd<InputSequence>(in);
+            auto out_cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in_cur && !!out_cur; ++ in_cur)
+            {
+                out_cur << std::move(*in_cur);
+            }
+
+            return {std::move(in_cur), std::move(out_cur)};
+        }
+    };
+
     struct transform_fn
     {
         template <class InputSequence, class OutputSequence, class UnaryFunction>
@@ -368,20 +387,66 @@ inline namespace v1
         }
     };
 
-    struct remove_copy_fn
+        struct remove_copy_fn
+        {
+            template <class InputSequence, class OutputSequence, class T>
+            std::pair<safe_cursor_type_t<InputSequence>,
+                      safe_cursor_type_t<OutputSequence>>
+            operator()(InputSequence && in,
+                       OutputSequence && out, T const  & value) const
+            {
+                auto in_cur = ::sayan::cursor_fwd<InputSequence>(in);
+                using Ref = decltype(*in_cur);
+
+                return remove_copy_if_fn{}(std::move(in_cur),
+                                           std::forward<OutputSequence>(out),
+                                           [&value](Ref x) { return x == value; });
+            }
+        };
+
+    struct replace_copy_if_fn
+    {
+        template <class InputSequence, class OutputSequence,
+                  class UnaryPredicate, class T>
+        std::pair<safe_cursor_type_t<InputSequence>,
+                  safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence && in, OutputSequence && out,
+                   UnaryPredicate pred, T const & new_value) const
+        {
+            auto in_cur = ::sayan::cursor_fwd<InputSequence>(in);
+            auto out_cur = ::sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in_cur && !!out_cur; ++in_cur)
+            {
+                if(pred(*in_cur))
+                {
+                    out_cur << new_value;
+                }
+                else
+                {
+                    out_cur << *in_cur;
+                }
+            }
+
+            return {std::move(in_cur), std::move(out_cur)};
+        }
+    };
+
+    struct replace_copy_fn
     {
         template <class InputSequence, class OutputSequence, class T>
         std::pair<safe_cursor_type_t<InputSequence>,
                   safe_cursor_type_t<OutputSequence>>
-        operator()(InputSequence && in,
-                   OutputSequence && out, T const  & value) const
+        operator()(InputSequence && in, OutputSequence && out,
+                   T const & old_value, T const & new_value) const
         {
             auto in_cur = ::sayan::cursor_fwd<InputSequence>(in);
             using Ref = decltype(*in_cur);
 
-            return remove_copy_if_fn{}(std::move(in_cur),
-                                       std::forward<OutputSequence>(out),
-                                       [&value](Ref x) { return x == value; });
+            auto impl = ::sayan::replace_copy_if_fn{};
+            return impl(std::move(in_cur), std::forward<OutputSequence>(out),
+                        [&old_value](Ref x) { return x == old_value; },
+                        new_value);
         }
     };
 
@@ -406,6 +471,8 @@ inline namespace v1
         constexpr auto const & copy = static_const<copy_fn>;
         constexpr auto const & copy_if = static_const<copy_if_fn>;
 
+        constexpr auto const & move = static_const<move_fn>;
+
         constexpr auto const & transform = static_const<transform_fn>;
 
         constexpr auto const & fill = static_const<fill_fn>;
@@ -413,6 +480,9 @@ inline namespace v1
 
         constexpr auto const & remove_copy = static_const<remove_copy_fn>;
         constexpr auto const & remove_copy_if = static_const<remove_copy_if_fn>;
+
+        constexpr auto const & replace_copy = static_const<replace_copy_fn>;
+        constexpr auto const & replace_copy_if = static_const<replace_copy_if_fn>;
 
         constexpr auto const & is_partitioned = static_const<is_partitioned_fn>;
 

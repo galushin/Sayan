@@ -76,9 +76,9 @@ inline namespace v1
     }
 
     template <class Cursor, class T, class = std::enable_if_t<is_cursor<Cursor>::value>>
-    Cursor & operator<<(Cursor & cur, T const & value)
+    Cursor & operator<<(Cursor & cur, T && value)
     {
-        *cur = value;
+        *cur = std::forward<T>(value);
         ++ cur;
         return cur;
     }
