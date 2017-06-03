@@ -1,7 +1,7 @@
 #ifndef Z_SAYAN_CURSOR_ITERATOR_CURSOR_HPP_INCLUDED
 #define Z_SAYAN_CURSOR_ITERATOR_CURSOR_HPP_INCLUDED
 
-#include <sayan/cursor/check_policies.hpp>
+#include <sayan/cursor/defs.hpp>
 
 namespace sayan
 {
@@ -63,18 +63,6 @@ inline namespace v1
         Iterator begin_;
         Sentinel end_;
     };
-
-    // @todo Запретить привязку к временным значениям?
-    // @todo Использовать свободные функции begin и end?
-    template <class Range>
-    auto cursor(Range && r)
-    -> iterator_cursor_type<decltype(std::forward<Range>(r).begin()),
-                            decltype(std::forward<Range>(r).end())>
-    {
-        using Cursor = iterator_cursor_type<decltype(std::forward<Range>(r).begin()),
-                                            decltype(std::forward<Range>(r).end())>;
-        return Cursor{std::forward<Range>(r).begin(), std::forward<Range>(r).end()};
-    }
 }
 // namespace v1
 }

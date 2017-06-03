@@ -59,6 +59,18 @@ inline namespace v1
             return *this;
         }
 
+        //@{
+        bool empty() const
+        {
+            return !this->os_;
+        }
+
+        bool operator!() const
+        {
+            return this->empty();
+        }
+        //@}
+
         /** @brief Передать поток вывода вызывающей стороне
         @post Если @c OStream -- не ссылочный тип, то после вызова курсор
         становится недействительным.
@@ -83,6 +95,13 @@ inline namespace v1
         Delimiter delim_;
         void(ostream_cursor_type::*on_delim_)();
     };
+
+    template <class OStream, class Delimiter>
+    ostream_cursor_type<OStream, Delimiter>
+    cursor_hook(ostream_cursor_type<OStream, Delimiter> cur, adl_tag)
+    {
+        return cur;
+    }
 
     /** @brief Функция создания @c ostream_cursor_type
     @param os поток вывода
@@ -125,12 +144,12 @@ inline namespace v1
     @param os поток вывода
     @param delim разделитель
     */
-    template <class OStream, class Delimiter = empty_delimiter,
+    template <class OStream,
               class = std::enable_if_t<is_based_on_ostream<OStream>::value>>
-    ostream_cursor_type<OStream, Delimiter>
-    cursor(OStream && os, Delimiter delim = Delimiter{})
+    ostream_cursor_type<OStream>
+    cursor_hook(OStream && os, adl_tag)
     {
-        return ostream_cursor(std::forward<OStream>(os), std::move(delim));
+        return ostream_cursor_type<OStream>(std::forward<OStream>(os));
     }
 }
 }

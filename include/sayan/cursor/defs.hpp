@@ -1,6 +1,7 @@
 #ifndef Z_URAL_CURSOR_DEFS_HPP_INCLUDED
 #define Z_URAL_CURSOR_DEFS_HPP_INCLUDED
 
+#include <sayan/adl_tag.hpp>
 #include <sayan/utility/static_const.hpp>
 
 #include <type_traits>
@@ -74,8 +75,16 @@ inline namespace v1
         return cur;
     }
 
+    template <class Cursor, class T, class = std::enable_if_t<is_cursor<Cursor>::value>>
+    Cursor & operator<<(Cursor & cur, T const & value)
+    {
+        *cur = value;
+        ++ cur;
+        return cur;
+    }
+
     template <class Cursor, class = std::enable_if_t<is_cursor<Cursor>::value>>
-    Cursor cursor(Cursor cur)
+    Cursor cursor_hook(Cursor cur, adl_tag)
     {
         return cur;
     }

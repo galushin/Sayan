@@ -81,7 +81,7 @@ inline namespace v1
 
     template <class IStream, class = std::enable_if_t<sayan::is_based_on_istream<IStream>::value>>
     istream_by_char_cursor<IStream>
-    cursor(IStream && is)
+    cursor_hook(IStream && is, adl_tag)
     {
         using Cursor = istream_by_char_cursor<IStream>;
         return Cursor(std::forward<IStream>(is));
