@@ -450,6 +450,283 @@ inline namespace v1
         }
     };
 
+    struct unique_copy_fn
+    {
+    public:
+        template <class InputSequence, class OutputSequence,
+                  class BinaryPredicate = std::equal_to<>>
+        std::pair<safe_cursor_type_t<InputSequence>,
+                  safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence && in, OutputSequence && out,
+                   BinaryPredicate bin_pred = BinaryPredicate{}) const
+        {
+            auto in_cur = ::sayan::cursor_fwd<InputSequence>(in);
+            auto out_cur = ::sayan::cursor_fwd<OutputSequence>(out);
+
+            if(!in_cur || !out_cur)
+            {
+                return {std::move(in_cur), std::move(out_cur)};
+            }
+
+            auto x = *in_cur;
+            ++ in_cur;
+            out_cur << x;
+
+            for(; !!in_cur && !!out_cur; ++in_cur)
+            {
+                if(!bin_pred(x, *in_cur))
+                {
+                    x = *in_cur;
+                    out_cur << x;
+                }
+            }
+
+            return {std::move(in_cur), std::move(out_cur)};
+        }
+    };
+
+    struct partition_copy_fn
+    {
+        template <class InputSequence, class OutputSequence1,
+                  class OutputSequence2, class UnaryPredicate>
+        std::tuple<safe_cursor_type_t<InputSequence>,
+                   safe_cursor_type_t<OutputSequence1>,
+                   safe_cursor_type_t<OutputSequence2>>
+        operator()(InputSequence && in, OutputSequence1 && out_true,
+                   OutputSequence2 && out_false, UnaryPredicate pred) const
+        {
+            auto in_cur = sayan::cursor_fwd<InputSequence>(in);
+            auto out_true_cur = sayan::cursor_fwd<OutputSequence1>(out_true);
+            auto out_false_cur = sayan::cursor_fwd<OutputSequence2>(out_false);
+
+            for(; !!in_cur && !!out_true_cur && !!out_false_cur; ++ in_cur)
+            {
+                if(pred(*in_cur))
+                {
+                    out_true_cur << *in_cur;
+                }
+                else
+                {
+                    out_false_cur << *in_cur;
+                }
+            }
+
+            using Tuple = std::tuple<safe_cursor_type_t<InputSequence>,
+                                     safe_cursor_type_t<OutputSequence1>,
+                                     safe_cursor_type_t<OutputSequence2>>;
+            return Tuple{std::move(in_cur), std::move(out_true_cur), std::move(out_false_cur)};
+        }
+    };
+
+    struct merge_fn
+    {
+        template <class InputSequence1, class InputSequence2,
+                    class OutputSequence, class Compare = std::less<>>
+        std::tuple<safe_cursor_type_t<InputSequence1>,
+                   safe_cursor_type_t<InputSequence2>,
+                   safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence1 && in1, InputSequence2 && in2, OutputSequence && out,
+                   Compare cmp = Compare{}) const
+        {
+            auto in1_cur = sayan::cursor_fwd<InputSequence1>(in1);
+            auto in2_cur = sayan::cursor_fwd<InputSequence2>(in2);
+            auto out_cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in1_cur && !!in2_cur && !!out_cur; )
+            {
+                if(cmp(*in2_cur, *in1_cur))
+                {
+                    out_cur << *in2_cur;
+                    ++ in2_cur;
+                }
+                else
+                {
+                    out_cur << *in1_cur;
+                    ++ in1_cur;
+                }
+            }
+
+            auto r1 = ::sayan::copy_fn{}(std::move(in1_cur), std::move(out_cur));
+            auto r2 = ::sayan::copy_fn{}(std::move(in2_cur), std::move(r1.second));
+
+            using Tuple = std::tuple<safe_cursor_type_t<InputSequence1>,
+                                     safe_cursor_type_t<InputSequence2>,
+                                     safe_cursor_type_t<OutputSequence>>;
+            return Tuple{std::move(r1.first), std::move(r2.first), std::move(r2.second)};
+        }
+    };
+
+    struct set_union_fn
+    {
+        template <class InputSequence1, class InputSequence2,
+                    class OutputSequence, class Compare = std::less<>>
+        std::tuple<safe_cursor_type_t<InputSequence1>,
+                   safe_cursor_type_t<InputSequence2>,
+                   safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence1 && in1, InputSequence2 && in2, OutputSequence && out,
+                   Compare cmp = Compare{}) const
+        {
+            auto in1_cur = sayan::cursor_fwd<InputSequence1>(in1);
+            auto in2_cur = sayan::cursor_fwd<InputSequence2>(in2);
+            auto out_cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in1_cur && !!in2_cur && !!out_cur; )
+            {
+                if(cmp(*in2_cur, *in1_cur))
+                {
+                    out_cur << *in2_cur;
+                    ++ in2_cur;
+                }
+                else if(cmp(*in1_cur, *in2_cur))
+                {
+                    out_cur << *in1_cur;
+                    ++ in1_cur;
+                }
+                else
+                {
+                    out_cur << *in1_cur;
+                    ++ in1_cur;
+                    ++ in2_cur;
+                }
+            }
+
+            auto r1 = ::sayan::copy_fn{}(std::move(in1_cur), std::move(out_cur));
+            auto r2 = ::sayan::copy_fn{}(std::move(in2_cur), std::move(r1.second));
+
+            using Tuple = std::tuple<safe_cursor_type_t<InputSequence1>,
+                                     safe_cursor_type_t<InputSequence2>,
+                                     safe_cursor_type_t<OutputSequence>>;
+            return Tuple{std::move(r1.first), std::move(r2.first), std::move(r2.second)};
+        }
+    };
+
+    struct set_intersection_fn
+    {
+        template <class InputSequence1, class InputSequence2,
+                    class OutputSequence, class Compare = std::less<>>
+        std::tuple<safe_cursor_type_t<InputSequence1>,
+                   safe_cursor_type_t<InputSequence2>,
+                   safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence1 && in1, InputSequence2 && in2, OutputSequence && out,
+                   Compare cmp = Compare{}) const
+        {
+            auto in1_cur = sayan::cursor_fwd<InputSequence1>(in1);
+            auto in2_cur = sayan::cursor_fwd<InputSequence2>(in2);
+            auto out_cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in1_cur && !!in2_cur && !!out_cur; )
+            {
+                if(cmp(*in2_cur, *in1_cur))
+                {
+                    ++ in2_cur;
+                }
+                else if(cmp(*in1_cur, *in2_cur))
+                {
+                    ++ in1_cur;
+                }
+                else
+                {
+                    out_cur << *in1_cur;
+                    ++ in1_cur;
+                    ++ in2_cur;
+                }
+            }
+
+            auto r1 = ::sayan::copy_fn{}(std::move(in1_cur), std::move(out_cur));
+            auto r2 = ::sayan::copy_fn{}(std::move(in2_cur), std::move(r1.second));
+
+            using Tuple = std::tuple<safe_cursor_type_t<InputSequence1>,
+                                     safe_cursor_type_t<InputSequence2>,
+                                     safe_cursor_type_t<OutputSequence>>;
+            return Tuple{std::move(r1.first), std::move(r2.first), std::move(r2.second)};
+        }
+    };
+
+    struct set_difference_fn
+    {
+        template <class InputSequence1, class InputSequence2,
+                    class OutputSequence, class Compare = std::less<>>
+        std::tuple<safe_cursor_type_t<InputSequence1>,
+                   safe_cursor_type_t<InputSequence2>,
+                   safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence1 && in1, InputSequence2 && in2, OutputSequence && out,
+                   Compare cmp = Compare{}) const
+        {
+            auto in1_cur = sayan::cursor_fwd<InputSequence1>(in1);
+            auto in2_cur = sayan::cursor_fwd<InputSequence2>(in2);
+            auto out_cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in1_cur && !!in2_cur && !!out_cur; )
+            {
+                if(cmp(*in2_cur, *in1_cur))
+                {
+                    ++ in2_cur;
+                }
+                else if(cmp(*in1_cur, *in2_cur))
+                {
+                    out_cur << *in1_cur;
+                    ++ in1_cur;
+                }
+                else
+                {
+                    ++ in1_cur;
+                    ++ in2_cur;
+                }
+            }
+
+            auto r1 = ::sayan::copy_fn{}(std::move(in1_cur), std::move(out_cur));
+            auto r2 = ::sayan::copy_fn{}(std::move(in2_cur), std::move(r1.second));
+
+            using Tuple = std::tuple<safe_cursor_type_t<InputSequence1>,
+                                     safe_cursor_type_t<InputSequence2>,
+                                     safe_cursor_type_t<OutputSequence>>;
+            return Tuple{std::move(r1.first), std::move(r2.first), std::move(r2.second)};
+        }
+    };
+
+    struct set_symmetric_difference_fn
+    {
+        template <class InputSequence1, class InputSequence2,
+                    class OutputSequence, class Compare = std::less<>>
+        std::tuple<safe_cursor_type_t<InputSequence1>,
+                   safe_cursor_type_t<InputSequence2>,
+                   safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence1 && in1, InputSequence2 && in2, OutputSequence && out,
+                   Compare cmp = Compare{}) const
+        {
+            auto in1_cur = sayan::cursor_fwd<InputSequence1>(in1);
+            auto in2_cur = sayan::cursor_fwd<InputSequence2>(in2);
+            auto out_cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in1_cur && !!in2_cur && !!out_cur; )
+            {
+                if(cmp(*in2_cur, *in1_cur))
+                {
+                    out_cur << *in2_cur;
+                    ++ in2_cur;
+                }
+                else if(cmp(*in1_cur, *in2_cur))
+                {
+                    out_cur << *in1_cur;
+                    ++ in1_cur;
+                }
+                else
+                {
+                    ++ in1_cur;
+                    ++ in2_cur;
+                }
+            }
+
+            auto r1 = ::sayan::copy_fn{}(std::move(in1_cur), std::move(out_cur));
+            auto r2 = ::sayan::copy_fn{}(std::move(in2_cur), std::move(r1.second));
+
+            using Tuple = std::tuple<safe_cursor_type_t<InputSequence1>,
+                                     safe_cursor_type_t<InputSequence2>,
+                                     safe_cursor_type_t<OutputSequence>>;
+            return Tuple{std::move(r1.first), std::move(r2.first), std::move(r2.second)};
+        }
+    };
+
     namespace
     {
         constexpr auto const & all_of = static_const<all_of_fn>;
@@ -484,12 +761,21 @@ inline namespace v1
         constexpr auto const & replace_copy = static_const<replace_copy_fn>;
         constexpr auto const & replace_copy_if = static_const<replace_copy_if_fn>;
 
+        constexpr auto const & unique_copy = static_const<unique_copy_fn>;
+
         constexpr auto const & is_partitioned = static_const<is_partitioned_fn>;
+        constexpr auto const & partition_copy = static_const<partition_copy_fn>;
 
         constexpr auto const & includes = static_const<includes_fn>;
+        constexpr auto const & set_union = static_const<set_union_fn>;
+        constexpr auto const & set_intersection = static_const<set_intersection_fn>;
+        constexpr auto const & set_difference = static_const<set_difference_fn>;
+        constexpr auto const & set_symmetric_difference = static_const<set_symmetric_difference_fn>;
 
         constexpr auto const & lexicographical_compare
             = static_const<lexicographical_compare_fn>;
+
+        constexpr auto const & merge = static_const<merge_fn>;
     }
 }
 //namespace v1
