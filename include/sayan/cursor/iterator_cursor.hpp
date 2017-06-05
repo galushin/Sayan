@@ -15,6 +15,7 @@ inline namespace v1
     public:
         // Типы
         using reference = typename ::std::iterator_traits<Iterator>::reference;
+        using difference_type = typename ::std::iterator_traits<Iterator>::difference_type;
 
         // Конструкторы
         /** @brief Конструктор

@@ -50,6 +50,24 @@ inline namespace v1
 
     template <class Sequence>
     using safe_cursor_type_t = cursor_type_t<Sequence>;
+
+    //@{
+    template <class Sequence>
+    auto cursor_fwd(std::remove_reference_t<Sequence> & seq)
+    noexcept(noexcept(::sayan::cursor(std::forward<Sequence>(seq))))
+    -> decltype(::sayan::cursor(std::forward<Sequence>(seq)))
+    {
+        return ::sayan::cursor(std::forward<Sequence>(seq));
+    }
+
+    template <class Sequence>
+    auto cursor_fwd(std::remove_reference_t<Sequence> && seq)
+    noexcept(noexcept(::sayan::cursor(std::forward<Sequence>(seq))))
+    -> decltype(::sayan::cursor(std::forward<Sequence>(seq)))
+    {
+        return ::sayan::cursor(std::forward<Sequence>(seq));
+    }
+    //@}
 }
 // namespace v1
 }
