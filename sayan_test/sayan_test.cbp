@@ -44,6 +44,7 @@
 		<Unit filename="../include/sayan/cursor/iterator_cursor.hpp" />
 		<Unit filename="../include/sayan/cursor/ostream.hpp" />
 		<Unit filename="../include/sayan/cursor/sequence_to_cursor.hpp" />
+		<Unit filename="../include/sayan/numeric.hpp" />
 		<Unit filename="../include/sayan/utility/static_const.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="tests/algorithm/modifying.cpp" />
@@ -51,6 +52,7 @@
 		<Unit filename="tests/cursor/inserters.cpp" />
 		<Unit filename="tests/cursor/istream.cpp" />
 		<Unit filename="tests/cursor/ostream.cpp" />
+		<Unit filename="tests/numeric/numeric_algo.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
