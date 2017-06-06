@@ -32,9 +32,9 @@ OBJDIR_RELEASE = ./obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = ./bin/Release/sayan_test
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/tests/algorithm/modifying.o $(OBJDIR_DEBUG)/tests/algorithm/nonmodifying.o $(OBJDIR_DEBUG)/tests/cursor/inserters.o $(OBJDIR_DEBUG)/tests/cursor/istream.o $(OBJDIR_DEBUG)/tests/cursor/ostream.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/tests/algorithm/modifying.o $(OBJDIR_DEBUG)/tests/algorithm/nonmodifying.o $(OBJDIR_DEBUG)/tests/cursor/inserters.o $(OBJDIR_DEBUG)/tests/cursor/istream.o $(OBJDIR_DEBUG)/tests/cursor/ostream.o $(OBJDIR_DEBUG)/tests/numeric/numeric_algo.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/tests/algorithm/modifying.o $(OBJDIR_RELEASE)/tests/algorithm/nonmodifying.o $(OBJDIR_RELEASE)/tests/cursor/inserters.o $(OBJDIR_RELEASE)/tests/cursor/istream.o $(OBJDIR_RELEASE)/tests/cursor/ostream.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/tests/algorithm/modifying.o $(OBJDIR_RELEASE)/tests/algorithm/nonmodifying.o $(OBJDIR_RELEASE)/tests/cursor/inserters.o $(OBJDIR_RELEASE)/tests/cursor/istream.o $(OBJDIR_RELEASE)/tests/cursor/ostream.o $(OBJDIR_RELEASE)/tests/numeric/numeric_algo.o
 
 all: debug release
 
@@ -45,6 +45,7 @@ before_debug:
 	test -d $(OBJDIR_DEBUG) || mkdir -p $(OBJDIR_DEBUG)
 	test -d $(OBJDIR_DEBUG)/tests/algorithm || mkdir -p $(OBJDIR_DEBUG)/tests/algorithm
 	test -d $(OBJDIR_DEBUG)/tests/cursor || mkdir -p $(OBJDIR_DEBUG)/tests/cursor
+	test -d $(OBJDIR_DEBUG)/tests/numeric || mkdir -p $(OBJDIR_DEBUG)/tests/numeric
 
 after_debug: 
 
@@ -71,18 +72,23 @@ $(OBJDIR_DEBUG)/tests/cursor/istream.o: tests/cursor/istream.cpp
 $(OBJDIR_DEBUG)/tests/cursor/ostream.o: tests/cursor/ostream.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tests/cursor/ostream.cpp -o $(OBJDIR_DEBUG)/tests/cursor/ostream.o
 
+$(OBJDIR_DEBUG)/tests/numeric/numeric_algo.o: tests/numeric/numeric_algo.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tests/numeric/numeric_algo.cpp -o $(OBJDIR_DEBUG)/tests/numeric/numeric_algo.o
+
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf ./bin/Debug
 	rm -rf $(OBJDIR_DEBUG)
 	rm -rf $(OBJDIR_DEBUG)/tests/algorithm
 	rm -rf $(OBJDIR_DEBUG)/tests/cursor
+	rm -rf $(OBJDIR_DEBUG)/tests/numeric
 
 before_release: 
 	test -d ./bin/Release || mkdir -p ./bin/Release
 	test -d $(OBJDIR_RELEASE) || mkdir -p $(OBJDIR_RELEASE)
 	test -d $(OBJDIR_RELEASE)/tests/algorithm || mkdir -p $(OBJDIR_RELEASE)/tests/algorithm
 	test -d $(OBJDIR_RELEASE)/tests/cursor || mkdir -p $(OBJDIR_RELEASE)/tests/cursor
+	test -d $(OBJDIR_RELEASE)/tests/numeric || mkdir -p $(OBJDIR_RELEASE)/tests/numeric
 
 after_release: 
 
@@ -109,12 +115,16 @@ $(OBJDIR_RELEASE)/tests/cursor/istream.o: tests/cursor/istream.cpp
 $(OBJDIR_RELEASE)/tests/cursor/ostream.o: tests/cursor/ostream.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tests/cursor/ostream.cpp -o $(OBJDIR_RELEASE)/tests/cursor/ostream.o
 
+$(OBJDIR_RELEASE)/tests/numeric/numeric_algo.o: tests/numeric/numeric_algo.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tests/numeric/numeric_algo.cpp -o $(OBJDIR_RELEASE)/tests/numeric/numeric_algo.o
+
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
 	rm -rf ./bin/Release
 	rm -rf $(OBJDIR_RELEASE)
 	rm -rf $(OBJDIR_RELEASE)/tests/algorithm
 	rm -rf $(OBJDIR_RELEASE)/tests/cursor
+	rm -rf $(OBJDIR_RELEASE)/tests/numeric
 
 .PHONY: before_debug after_debug clean_debug before_release after_release clean_release
 
