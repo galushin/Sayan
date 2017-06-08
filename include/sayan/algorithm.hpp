@@ -124,15 +124,16 @@ inline namespace v1
 
     struct count_fn
     {
-        template <class InputSequence, class T>
+        template <class InputSequence, class T, class BinaryPredicate = std::equal_to<>>
         difference_type_t<safe_cursor_type_t<InputSequence>>
-        operator()(InputSequence && in, T const & value) const
+        operator()(InputSequence && in, T const & value,
+                   BinaryPredicate bin_pred = BinaryPredicate{}) const
         {
             auto cur = ::sayan::cursor_fwd<InputSequence>(in);
 
             using Ref = decltype(*cur);
             return ::sayan::count_if_fn{}(std::move(cur),
-                                          [&value](Ref x){return x == value;});
+                                          [&value, &bin_pred](Ref x){return bin_pred(x, value);});
         }
     };
 
@@ -387,22 +388,54 @@ inline namespace v1
         }
     };
 
-        struct remove_copy_fn
+    struct remove_copy_fn
+    {
+        template <class InputSequence, class OutputSequence, class T>
+        std::pair<safe_cursor_type_t<InputSequence>,
+                  safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence && in,
+                   OutputSequence && out, T const  & value) const
         {
-            template <class InputSequence, class OutputSequence, class T>
-            std::pair<safe_cursor_type_t<InputSequence>,
-                      safe_cursor_type_t<OutputSequence>>
-            operator()(InputSequence && in,
-                       OutputSequence && out, T const  & value) const
-            {
-                auto in_cur = ::sayan::cursor_fwd<InputSequence>(in);
-                using Ref = decltype(*in_cur);
+            auto in_cur = ::sayan::cursor_fwd<InputSequence>(in);
+            using Ref = decltype(*in_cur);
 
-                return remove_copy_if_fn{}(std::move(in_cur),
-                                           std::forward<OutputSequence>(out),
-                                           [&value](Ref x) { return x == value; });
+            return remove_copy_if_fn{}(std::move(in_cur),
+                                       std::forward<OutputSequence>(out),
+                                       [&value](Ref x) { return x == value; });
+        }
+    };
+
+    struct replace_if_fn
+    {
+        template <class ForwardSequence, class UnaryPredicate, class T>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, UnaryPredicate pred, T const & new_value) const
+        {
+            auto cur = ::sayan::cursor_fwd<ForwardSequence>(seq);
+            for(; !!cur; ++ cur)
+            {
+                if(pred(*cur))
+                {
+                    *cur = new_value;
+                }
             }
-        };
+            return cur;
+        }
+    };
+
+    struct replace_fn
+    {
+        template <class ForwardSequence, class T>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, T const & old_value, T const & new_value) const
+        {
+            auto cur = ::sayan::cursor_fwd<ForwardSequence>(seq);
+            using Ref = decltype(*cur);
+            return ::sayan::replace_if_fn{}(std::move(cur),
+                                            [&old_value](Ref x) { return x == old_value; },
+                                            new_value);
+        }
+    };
 
     struct replace_copy_if_fn
     {
@@ -727,6 +760,39 @@ inline namespace v1
         }
     };
 
+    struct is_permutation_fn
+    {
+        template <class ForwardSequence1, class ForwardSequence2,
+                  class BinaryPredicate = std::equal_to<>>
+        bool operator()(ForwardSequence1 && in1, ForwardSequence2 && in2,
+                        BinaryPredicate bin_pred = BinaryPredicate{}) const
+        {
+            auto cur1 = ::sayan::cursor_fwd<ForwardSequence1>(in1);
+            auto cur2 = ::sayan::cursor_fwd<ForwardSequence2>(in2);
+
+            std::tie(cur1, cur2)
+                = ::sayan::mismatch_fn{}(std::move(cur1), std::move(cur2), bin_pred);
+
+            if(::sayan::size_fn{}(cur1) != ::sayan::size_fn{}(cur2))
+            {
+                return false;
+            }
+
+            for(auto i = cur1; !!i; ++ i)
+            {
+                auto const n1 = ::sayan::count_fn{}(cur1, *i, bin_pred);
+                auto const n2 = ::sayan::count_fn{}(cur2, *i, bin_pred);
+
+                if(n1 != n2)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    };
+
     namespace
     {
         constexpr auto const & all_of = static_const<all_of_fn>;
@@ -758,6 +824,8 @@ inline namespace v1
         constexpr auto const & remove_copy = static_const<remove_copy_fn>;
         constexpr auto const & remove_copy_if = static_const<remove_copy_if_fn>;
 
+        constexpr auto const & replace = static_const<replace_fn>;
+        constexpr auto const & replace_if = static_const<replace_if_fn>;
         constexpr auto const & replace_copy = static_const<replace_copy_fn>;
         constexpr auto const & replace_copy_if = static_const<replace_copy_if_fn>;
 
@@ -766,6 +834,7 @@ inline namespace v1
         constexpr auto const & is_partitioned = static_const<is_partitioned_fn>;
         constexpr auto const & partition_copy = static_const<partition_copy_fn>;
 
+        constexpr auto const & merge = static_const<merge_fn>;
         constexpr auto const & includes = static_const<includes_fn>;
         constexpr auto const & set_union = static_const<set_union_fn>;
         constexpr auto const & set_intersection = static_const<set_intersection_fn>;
@@ -775,7 +844,7 @@ inline namespace v1
         constexpr auto const & lexicographical_compare
             = static_const<lexicographical_compare_fn>;
 
-        constexpr auto const & merge = static_const<merge_fn>;
+        constexpr auto const & is_permutation = static_const<is_permutation_fn>;
     }
 }
 //namespace v1

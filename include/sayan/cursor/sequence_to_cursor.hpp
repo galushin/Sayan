@@ -68,6 +68,27 @@ inline namespace v1
         return ::sayan::cursor(std::forward<Sequence>(seq));
     }
     //@}
+
+    struct size_fn
+    {
+        template <class InputSequence>
+        difference_type_t<cursor_type_t<InputSequence>>
+        operator()(InputSequence && seq) const
+        {
+            auto n = difference_type_t<cursor_type_t<InputSequence>>{0};
+
+            for(auto cur = ::sayan::cursor_fwd<InputSequence>(seq); !!cur; ++ cur)
+            {
+                ++ n;
+            }
+            return n;
+        }
+    };
+
+    namespace
+    {
+        constexpr auto const & size = static_const<size_fn>;
+    }
 }
 // namespace v1
 }

@@ -622,6 +622,48 @@ TEST_CASE("algorithm/copy_if: to longer")
     CHECK(std::get<1>(result).end() == dest.end());
 }
 
+TEST_CASE("algorithm/replace")
+{
+    std::forward_list<int> xs_std{1,2,3,2,5,2};
+    auto xs = xs_std;
+
+    auto const old_value = int{2};
+    auto const new_value = int{22};
+
+    std::replace(xs_std.begin(), xs_std.end(), old_value, new_value);
+
+    auto const result = sayan::replace(xs, old_value, new_value);
+
+    CHECK(xs == xs_std);
+
+    CHECK(result.begin() == xs.end());
+    CHECK(result.end() == xs.end());
+
+    // @todo Проверить пройденную часть
+}
+
+TEST_CASE("algorithm/replace_if")
+{
+    std::forward_list<int> xs_std{1,2,3,4,5,6};
+    auto xs = xs_std;
+
+    auto const pred = [](auto const & x) { return x % 2 == 0; };
+    auto const new_value = int{-1};
+
+    std::replace_if(xs_std.begin(), xs_std.end(), pred, new_value);
+
+    auto const result = sayan::replace_if(xs, pred, new_value);
+
+    CHECK(xs == xs_std);
+
+    CHECK(result.begin() == xs.end());
+    CHECK(result.end() == xs.end());
+
+    // @todo Проверить пройденную часть
+}
+
+// @todo тест replace/replace_if для курсоров, охватывающих не всю последовательность
+
 TEST_CASE("algorithm/replace_copy")
 {
     std::string const src{"Human readable name"};
