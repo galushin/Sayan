@@ -239,6 +239,18 @@ TEST_CASE("algorithms/nonmodifying/count")
     }
 }
 
+TEST_CASE("regression #29: cursor() is ambigeous for cursors")
+{
+    std::string const s{};
+
+    auto const value = 'e';
+
+    auto cur = ::sayan::cursor(s);
+    auto cur1 = ::sayan::cursor(cur);
+
+    CHECK(::sayan::count(cur1, value) == 0);
+}
+
 TEST_CASE("algorithms/nonmodifying/count: auto-cursor")
 {
     std::vector<std::string> const strs{"", "generic_programming",
