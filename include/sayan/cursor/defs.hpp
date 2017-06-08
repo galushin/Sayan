@@ -52,7 +52,7 @@ inline namespace v1
 
     template <class T>
     struct is_cursor
-     : ::sayan::details::is_cursor<T>::type
+     : ::sayan::details::is_cursor<std::decay_t<T>>::type
     {};
 
     template <class Cursor, class = std::enable_if_t<is_cursor<Cursor>::value>>

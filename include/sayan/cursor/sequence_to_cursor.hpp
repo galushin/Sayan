@@ -46,7 +46,7 @@ inline namespace v1
     }
 
     template <class Sequence>
-    using cursor_type_t = decltype(cursor(std::declval<Sequence&&>()));
+    using cursor_type_t = decltype(cursor(std::declval<Sequence>()));
 
     template <class Sequence>
     using safe_cursor_type_t = cursor_type_t<Sequence>;
