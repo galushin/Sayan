@@ -49,6 +49,9 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="tests/algorithm/modifying.cpp" />
 		<Unit filename="tests/algorithm/nonmodifying.cpp" />
+		<Unit filename="tests/algorithm/partitioning.cpp" />
+		<Unit filename="tests/algorithm/permutations.cpp" />
+		<Unit filename="tests/algorithm/set_operations.cpp" />
 		<Unit filename="tests/cursor/inserters.cpp" />
 		<Unit filename="tests/cursor/istream.cpp" />
 		<Unit filename="tests/cursor/ostream.cpp" />
