@@ -5,6 +5,7 @@
 #include <catch/catch.hpp>
 
 #include <algorithm>
+#include <forward_list>
 
 TEST_CASE("algorithms/nonmodifying/quantors: all_of, any_of, some_of")
 {
@@ -222,6 +223,59 @@ TEST_CASE("algorithms/nonmodifying/find_if_not: fail, auto-cursor")
     auto const r = sayan::find_if_not(is, pred);
 
     CHECK(r.empty());
+}
+
+TEST_CASE("algorithm/find_first_of")
+{
+    std::forward_list<int> const whats{1,2,3,5,8,13,21};
+    std::forward_list<int> const where{25,5,49,7};
+
+    auto r_std = std::find_first_of(whats.begin(), whats.end(), where.begin(), where.end());
+    auto r = ::sayan::find_first_of(whats, where);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == whats.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/find_first_of: custom predicate, success")
+{
+    std::forward_list<int> const whats{1,2,3,5,8,13,21};
+    std::forward_list<int> const where{25,-5,-49,7};
+
+    auto const pred = [](auto x, auto y) { return std::abs(x) == std::abs(y); };
+
+    auto r_std = std::find_first_of(whats.begin(), whats.end(), where.begin(), where.end(), pred);
+    auto r = ::sayan::find_first_of(whats, where, pred);
+
+    CHECK(r_std != whats.end());
+    CHECK(!!r);
+
+    CHECK(r.begin() == r_std);
+    CHECK(*r.begin() == *r_std);
+    CHECK(r.end() == whats.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/find_first_of: custom predicate, fail")
+{
+    std::forward_list<int> const whats{1,2,3,5,8,13,21};
+    std::forward_list<int> const where{0,-4,9,-10};
+
+    auto const pred = [](auto x, auto y) { return std::abs(x) == std::abs(y); };
+
+    auto r_std = std::find_first_of(whats.begin(), whats.end(), where.begin(), where.end(), pred);
+    auto r = ::sayan::find_first_of(whats, where, pred);
+
+    CHECK(r_std == whats.end());
+    CHECK(!r);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == whats.end());
+
+    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithms/nonmodifying/count")

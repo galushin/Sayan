@@ -418,6 +418,62 @@ TEST_CASE("algorithm/generate")
     CHECK(xs == xs_std);
 }
 
+TEST_CASE("algorithm/remove")
+{
+    std::forward_list<int> xs_std{1, 2, -1, 3, -1, 4, - 1, 5, 6};
+    auto xs = xs_std;
+
+    auto const value = int{-1};
+
+    auto r_std = std::remove(xs_std.begin(), xs_std.end(), value);
+    std::vector<int> xs_std_head(xs_std.begin(), r_std);
+
+    auto r = sayan::remove(xs, value);
+    std::vector<int> xs_head(xs.begin(), r.begin());
+
+    CHECK(xs_head == xs_std_head);
+
+    // @todo Проверка пройденной части, в том числе для части контейнера
+}
+
+TEST_CASE("algorithm/remove_if")
+{
+    std::forward_list<int> xs_std{1, 2, -1, 3, -2, 0, - 5, 5, 6};
+    auto xs = xs_std;
+
+    auto const pred = [](auto x) { return x < 0; };
+
+    auto r_std = std::remove_if(xs_std.begin(), xs_std.end(), pred);
+    std::vector<int> xs_std_head(xs_std.begin(), r_std);
+
+    auto r = sayan::remove_if(xs, pred);
+
+    std::vector<int> xs_head(xs.begin(), r.begin());
+
+    CHECK(xs_head == xs_std_head);
+
+    // @todo Проверка пройденной части, в том числе для части контейнера
+}
+
+TEST_CASE("algorithm/remove_if: nothing to remove")
+{
+    std::forward_list<int> xs{1, 2, 3, 0, 5, 5, 6};
+    auto const xs_old = xs;
+
+    auto const pred = [](auto x) { return x < 0; };
+
+    CHECK(::sayan::none_of(xs, pred));
+
+    auto r = sayan::remove_if(xs, pred);
+
+    CHECK(xs == xs_old);
+
+    CHECK(r.begin() == xs.end());
+    CHECK(r.end() == xs.end());
+
+    // @todo Проверка пройденной части, в том числе для части контейнера
+}
+
 TEST_CASE("algorithm/remove_copy")
 {
     std::string const src{"Bjarne Stroustrup"};

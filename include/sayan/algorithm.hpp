@@ -58,15 +58,39 @@ inline namespace v1
 
     struct find_fn
     {
-        template <class InputSequence, class T>
+        template <class InputSequence, class T, class BinaryPredicate = std::equal_to<>>
         safe_cursor_type_t<InputSequence>
-        operator()(InputSequence && in, T const & value) const
+        operator()(InputSequence && in, T const & value,
+                   BinaryPredicate bin_pred = BinaryPredicate{}) const
         {
             auto cur = sayan::cursor_fwd<InputSequence>(in);
 
             using Ref = decltype(*cur);
             return ::sayan::find_if_fn{}(std::move(cur),
-                                         [&value](Ref x){ return x == value; });
+                                         [&value, &bin_pred](Ref x){ return bin_pred(x, value); });
+        }
+    };
+
+    struct find_first_of_fn
+    {
+        template <class InputSequence, class ForwardSequence,
+                  class BinaryPredicate = std::equal_to<>>
+        safe_cursor_type_t<InputSequence>
+        operator()(InputSequence && in, ForwardSequence && s,
+                   BinaryPredicate bin_pred = BinaryPredicate{}) const
+        {
+            auto in_cur = ::sayan::cursor_fwd<InputSequence>(in);
+            auto const s_cur = ::sayan::cursor_fwd<ForwardSequence>(s);
+
+            for(; !!in_cur; ++in_cur)
+            {
+                if(!!::sayan::find_fn{}(s_cur, *in_cur, bin_pred))
+                {
+                    return in_cur;
+                }
+            }
+
+            return in_cur;
         }
     };
 
@@ -402,6 +426,47 @@ inline namespace v1
             return remove_copy_if_fn{}(std::move(in_cur),
                                        std::forward<OutputSequence>(out),
                                        [&value](Ref x) { return x == value; });
+        }
+    };
+
+    struct remove_if_fn
+    {
+        template <class ForwardSequence, class UnaryPredicate>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, UnaryPredicate pred) const
+        {
+            auto out = find_if_fn{}(std::forward<ForwardSequence>(seq), pred);
+
+            if(!out)
+            {
+                return out;
+            }
+
+            auto cur = out;
+            ++ cur;
+
+            for(; !!cur; ++ cur)
+            {
+                if(!pred(*cur))
+                {
+                    out << std::move(*cur);
+                }
+            }
+
+            return out;
+        }
+    };
+
+    struct remove_fn
+    {
+        template <class ForwardSequence, class T>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, T const & value) const
+        {
+            auto cur = sayan::cursor_fwd<ForwardSequence>(seq);
+            using Ref = decltype(*cur);
+            return ::sayan::remove_if_fn{}(std::move(cur),
+                                           [&value](Ref x){ return x == value; });
         }
     };
 
@@ -811,6 +876,8 @@ inline namespace v1
         constexpr auto const & find_if = static_const<find_if_fn>;
         constexpr auto const & find_if_not = static_const<find_if_not_fn>;
 
+        constexpr auto const & find_first_of = static_const<find_first_of_fn>;
+
         constexpr auto const & copy = static_const<copy_fn>;
         constexpr auto const & copy_if = static_const<copy_if_fn>;
 
@@ -821,6 +888,8 @@ inline namespace v1
         constexpr auto const & fill = static_const<fill_fn>;
         constexpr auto const & generate = static_const<generate_fn>;
 
+        constexpr auto const & remove = static_const<remove_fn>;
+        constexpr auto const & remove_if = static_const<remove_if_fn>;
         constexpr auto const & remove_copy = static_const<remove_copy_fn>;
         constexpr auto const & remove_copy_if = static_const<remove_copy_if_fn>;
 
