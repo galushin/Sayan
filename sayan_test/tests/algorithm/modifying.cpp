@@ -866,6 +866,42 @@ TEST_CASE("algorithm/replace_copy_if: to shorter")
     CHECK(std::get<1>(result).end() == dest.end());
 }
 
+TEST_CASE("algorithm/unique")
+{
+    std::forward_list<int> xs_std{1, 2, 2, 3, 3, 4, 5, 5, 6, 2, 3, 5};
+    auto xs = xs_std;
+
+    auto const r_std = std::unique(xs_std.begin(), xs_std.end());
+    auto const r = sayan::unique(xs);
+
+    std::vector<int> out_std(xs_std.begin(), r_std);
+    std::vector<int> out(xs.begin(), r.begin());
+
+    CHECK(out == out_std);
+    CHECK(r.end() == xs.end());
+
+    // @todo Проверка пройденной части
+}
+
+TEST_CASE("algorithm/unique: custom predicate")
+{
+    std::string const src("common string \t with   repeating  \n\n\n\n  spaces");
+    std::forward_list<char> xs_std(src.begin(), src.end());
+    auto xs = xs_std;
+    auto const pred = [](char x, char y) { return std::isspace(x) && std::isspace(y) && x == y; };
+
+    auto const r_std = std::unique(xs_std.begin(), xs_std.end(), pred);
+    auto const r = sayan::unique(xs, pred);
+
+    std::string out_std(xs_std.begin(), r_std);
+    std::string out(xs.begin(), r.begin());
+
+    CHECK(out == out_std);
+    CHECK(r.end() == xs.end());
+
+    // @todo Проверка пройденной части
+}
+
 TEST_CASE("algorithm/unique_copy")
 {
     std::string const src = []()

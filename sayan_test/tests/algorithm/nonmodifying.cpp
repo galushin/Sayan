@@ -278,6 +278,54 @@ TEST_CASE("algorithm/find_first_of: custom predicate, fail")
     // @todo Проверка пройденной части последовательности
 }
 
+TEST_CASE("algorithm/adjacent_find")
+{
+    std::forward_list<int> const xs{1, 2, 3, 3, 4, 5};
+
+    auto const r_std = std::adjacent_find(xs.begin(), xs.end());
+
+    auto const r = sayan::adjacent_find(xs);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == xs.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/adjacent_find: custom predicate, fail")
+{
+    std::forward_list<int> const xs{1, 2, 3, 3, 4, 5};
+    auto const pred = std::greater<>{};
+
+    auto const r_std = std::adjacent_find(xs.begin(), xs.end(), pred);
+    auto const r = sayan::adjacent_find(xs, pred);
+
+    CHECK(r_std == xs.end());
+    CHECK(!r);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == xs.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/adjacent_find: custom predicate, success")
+{
+    std::forward_list<int> const xs{1, 2, 4, 3, 6, 5};
+    auto const pred = std::greater<>{};
+
+    auto const r_std = std::adjacent_find(xs.begin(), xs.end(), pred);
+    auto const r = sayan::adjacent_find(xs, pred);
+
+    CHECK(r_std != xs.end());
+    CHECK(!!r);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == xs.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
 TEST_CASE("algorithms/nonmodifying/count")
 {
     std::vector<std::string> const strs{"", "generic_programming",

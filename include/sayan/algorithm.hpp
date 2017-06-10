@@ -4,6 +4,7 @@
 #include <sayan/cursor/defs.hpp>
 #include <sayan/cursor/sequence_to_cursor.hpp>
 
+#include <cassert>
 #include <functional>
 #include <experimental/functional>
 
@@ -91,6 +92,36 @@ inline namespace v1
             }
 
             return in_cur;
+        }
+    };
+
+    struct adjacent_find_fn
+    {
+        template <class ForwardSequence, class BinaryPredicate = std::equal_to<>>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, BinaryPredicate bin_pred = BinaryPredicate{}) const
+        {
+            auto c1 = ::sayan::cursor_fwd<ForwardSequence>(seq);
+
+            if(!c1)
+            {
+                return c1;
+            }
+
+            auto c2 = c1;
+            ++ c2;
+
+            for(; !!c2; ++c2)
+            {
+                if(bin_pred(*c1, *c2))
+                {
+                    return c1;
+                }
+
+                c1 = c2;
+            }
+
+            return c2;
         }
     };
 
@@ -583,6 +614,38 @@ inline namespace v1
         }
     };
 
+    struct unique_fn
+    {
+        template <class ForwardSequence, class BinaryPredicate = std::equal_to<>>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, BinaryPredicate bin_pred = BinaryPredicate{}) const
+        {
+            auto out = adjacent_find_fn{}(std::forward<ForwardSequence>(seq), bin_pred);
+
+            if(!out)
+            {
+                return out;
+            }
+
+            auto cur = out;
+            ++ cur;
+            assert(!!out);
+            ++ cur;
+
+            for(; !!cur; ++ cur)
+            {
+                if(!bin_pred(*out, *cur))
+                {
+                    ++ out;
+                    *out = std::move(*cur);
+                }
+            }
+
+            ++ out;
+            return out;
+        }
+    };
+
     struct partition_copy_fn
     {
         template <class InputSequence, class OutputSequence1,
@@ -613,6 +676,37 @@ inline namespace v1
                                      safe_cursor_type_t<OutputSequence1>,
                                      safe_cursor_type_t<OutputSequence2>>;
             return Tuple{std::move(in_cur), std::move(out_true_cur), std::move(out_false_cur)};
+        }
+    };
+
+    struct is_sorted_until_fn
+    {
+        template <class ForwardSequence, class Compare = std::less<>>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto cur = ::sayan::cursor_fwd<ForwardSequence>(seq);
+            using Ref = decltype(*cur);
+
+            cur = ::sayan::adjacent_find_fn{}(std::move(cur),
+                                              [&cmp](Ref x, Ref y) { return cmp(y, x); });
+
+            if(!!cur)
+            {
+                ++ cur;
+            }
+
+            return cur;
+        }
+    };
+
+    struct is_sorted_fn
+    {
+        template <class ForwardSequence, class Compare = std::less<>>
+        bool operator()(ForwardSequence && seq, Compare cmp = Compare{}) const
+        {
+            return !::sayan::is_sorted_until_fn{}(std::forward<ForwardSequence>(seq),
+                                                  std::move(cmp));
         }
     };
 
@@ -825,6 +919,73 @@ inline namespace v1
         }
     };
 
+    struct min_element_fn
+    {
+        template <class ForwardSequence, class Compare = std::less<>>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto result = ::sayan::cursor_fwd<ForwardSequence>(seq);
+
+            if(!result)
+            {
+                return result;
+            }
+
+            auto cur = result;
+            ++ cur;
+
+            for(; !!cur; ++ cur)
+            {
+                if(cmp(*cur, *result))
+                {
+                    result = cur;
+                }
+            }
+
+            return result;
+        }
+    };
+
+    struct max_element_fn
+    {
+        template <class ForwardSequence, class Compare = std::less<>>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto result = ::sayan::cursor_fwd<ForwardSequence>(seq);
+
+            if(!result)
+            {
+                return result;
+            }
+
+            auto cur = result;
+            ++ cur;
+
+            for(; !!cur; ++ cur)
+            {
+                if(!cmp(*cur, *result))
+                {
+                    result = cur;
+                }
+            }
+
+            return result;
+        }
+    };
+
+    struct minmax_element_fn
+    {
+        template <class ForwardSequence, class Compare = std::less<>>
+        std::pair<safe_cursor_type_t<ForwardSequence>, safe_cursor_type_t<ForwardSequence>>
+        operator()(ForwardSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto cur = ::sayan::cursor_fwd<ForwardSequence>(seq);
+            return {sayan::min_element_fn{}(cur, cmp), sayan::max_element_fn{}(cur, cmp)};
+        }
+    };
+
     struct is_permutation_fn
     {
         template <class ForwardSequence1, class ForwardSequence2,
@@ -878,6 +1039,8 @@ inline namespace v1
 
         constexpr auto const & find_first_of = static_const<find_first_of_fn>;
 
+        constexpr auto const & adjacent_find = static_const<adjacent_find_fn>;
+
         constexpr auto const & copy = static_const<copy_fn>;
         constexpr auto const & copy_if = static_const<copy_if_fn>;
 
@@ -898,10 +1061,14 @@ inline namespace v1
         constexpr auto const & replace_copy = static_const<replace_copy_fn>;
         constexpr auto const & replace_copy_if = static_const<replace_copy_if_fn>;
 
+        constexpr auto const & unique = static_const<unique_fn>;
         constexpr auto const & unique_copy = static_const<unique_copy_fn>;
 
         constexpr auto const & is_partitioned = static_const<is_partitioned_fn>;
         constexpr auto const & partition_copy = static_const<partition_copy_fn>;
+
+        constexpr auto const & is_sorted = static_const<is_sorted_fn>;
+        constexpr auto const & is_sorted_until = static_const<is_sorted_until_fn>;
 
         constexpr auto const & merge = static_const<merge_fn>;
         constexpr auto const & includes = static_const<includes_fn>;
@@ -909,6 +1076,10 @@ inline namespace v1
         constexpr auto const & set_intersection = static_const<set_intersection_fn>;
         constexpr auto const & set_difference = static_const<set_difference_fn>;
         constexpr auto const & set_symmetric_difference = static_const<set_symmetric_difference_fn>;
+
+        constexpr auto const & min_element = static_const<min_element_fn>;
+        constexpr auto const & max_element = static_const<max_element_fn>;
+        constexpr auto const & minmax_element = static_const<minmax_element_fn>;
 
         constexpr auto const & lexicographical_compare
             = static_const<lexicographical_compare_fn>;
