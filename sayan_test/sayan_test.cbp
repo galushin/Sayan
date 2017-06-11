@@ -46,6 +46,7 @@
 		<Unit filename="../include/sayan/cursor/sequence_to_cursor.hpp" />
 		<Unit filename="../include/sayan/numeric.hpp" />
 		<Unit filename="../include/sayan/utility/static_const.hpp" />
+		<Unit filename="../include/sayan/utility/with_old_value.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="tests/algorithm/minmax.cpp" />
 		<Unit filename="tests/algorithm/modifying.cpp" />

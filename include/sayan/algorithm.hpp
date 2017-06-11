@@ -298,9 +298,7 @@ inline namespace v1
 
             if(!s_cur)
             {
-                // @todo Оптимизировать за счёт введения операции курсора
-                for(; !!cur; ++cur)
-                {}
+                cur.exhaust(::sayan::front_fn{});
 
                 return cur;
             }
@@ -317,12 +315,19 @@ inline namespace v1
 
             for (;;)
             {
+                auto pre = cur.traversed(sayan::front);
+
                 cur = ::sayan::search_fn{}(std::move(cur), s_cur);
 
                 if(!cur)
                 {
                     break;
                 }
+
+                pre.splice(cur.traversed(sayan::front));
+                pre.exhaust(sayan::front);
+                pre.splice(std::move(cur));
+                cur = std::move(pre);
 
                 result = cur;
                 ++ cur;
@@ -686,6 +691,110 @@ inline namespace v1
         }
     };
 
+    struct swap_ranges_fn
+    {
+        template <class ForwardSequence1, class ForwardSequence2>
+        std::pair<safe_cursor_type_t<ForwardSequence1>, safe_cursor_type_t<ForwardSequence2>>
+        operator()(ForwardSequence1 && s1, ForwardSequence2 && s2) const
+        {
+            auto cur1 = ::sayan::cursor_fwd<ForwardSequence1>(s1);
+            auto cur2 = ::sayan::cursor_fwd<ForwardSequence2>(s2);
+
+            for(;!!cur1 && !!cur2; ++ cur1, ++ cur2)
+            {
+                ::sayan::cursor_swap(cur1, cur2);
+            }
+
+            return {std::move(cur1), std::move(cur2)};
+        }
+    };
+
+    struct rotate_fn
+    {
+    public:
+        template <class ForwardCursor>
+        ForwardCursor
+        operator()(ForwardCursor cur) const
+        {
+            auto cur1 = cur.traversed(::sayan::front_fn{});
+
+            if(!cur1)
+            {
+                cur.exhaust(::sayan::front_fn{});
+                return cur;
+            }
+
+            if(!cur)
+            {
+                return cur1;
+            }
+
+            auto cur2 = cur;
+            cur2.forget(sayan::front_fn{});
+
+            return this->rotate_forward_nontrivial(std::move(cur1), std::move(cur2));
+        }
+
+    private:
+        template <class ForwardCursor>
+        void rotate_forward_step(ForwardCursor & cur1, ForwardCursor & cur2) const
+        {
+            do
+            {
+                ::sayan::cursor_swap(cur1, cur2);
+                ++ cur1;
+                ++ cur2;
+
+                if(!cur1)
+                {
+                    cur1.splice(cur2.traversed(::sayan::front));
+                    cur2.forget(::sayan::front);
+                }
+            }
+            while(!!cur2);
+            cur2 = std::move(cur2).traversed(::sayan::front);
+        }
+
+        template <class ForwardCursor>
+        ForwardCursor rotate_forward_nontrivial(ForwardCursor cur1, ForwardCursor cur2) const
+        {
+            this->rotate_forward_step(cur1, cur2);
+
+            auto result = cur1;
+            result.splice(cur2);
+
+            for(; !!cur2;)
+            {
+                this->rotate_forward_step(cur1, cur2);
+            }
+
+            return result;
+        }
+    };
+
+    struct rotate_copy_fn
+    {
+        template <class ForwardCursor, class OutputSequence>
+        std::pair<ForwardCursor, safe_cursor_type_t<OutputSequence>>
+        operator()(ForwardCursor in, OutputSequence && out) const
+        {
+            auto out_cur = ::sayan::cursor_fwd<OutputSequence>(out);
+            auto in2 = in.traversed(sayan::front);
+
+            for(; !!in && !!out_cur; ++ in)
+            {
+                out_cur << *in;
+            }
+
+            for(; !!in2 && !!out_cur; ++ in2)
+            {
+                out_cur << *in2;
+            }
+
+            return {std::move(in), std::move(out_cur)};
+        }
+    };
+
     struct unique_copy_fn
     {
     public:
@@ -799,21 +908,26 @@ inline namespace v1
                 return cur_false;
             }
 
-            auto cur = cur_false;
-            ++ cur;
-
-            for(; !!cur; ++ cur)
+            for(auto cur = sayan::next(cur_false); !!cur; ++ cur)
             {
                 if(pred(*cur))
                 {
-                    // @todo Обобщить механизм обмена
-                    using std::swap;
-                    swap(*cur_false, *cur);
+                    ::sayan::cursor_swap(cur_false, cur);
                     ++cur_false;
                 }
             }
 
             return cur_false;
+        }
+    };
+
+    struct partition_point_fn
+    {
+        template <class ForwardSequence, class UnaryPredicate>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, UnaryPredicate pred) const
+        {
+            return ::sayan::find_if_not_fn{}(std::forward<ForwardSequence>(seq), std::move(pred));
         }
     };
 
@@ -845,6 +959,53 @@ inline namespace v1
         {
             return !::sayan::is_sorted_until_fn{}(std::forward<ForwardSequence>(seq),
                                                   std::move(cmp));
+        }
+    };
+
+    struct lower_bound_fn
+    {
+        template <class ForwardSequence, class T, class Compare = std::less<>>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, T const & value, Compare cmp = Compare{}) const
+        {
+            auto const pred = [&value, &cmp](auto const & x) { return cmp(x, value); };
+
+            return ::sayan::partition_point_fn{}(std::forward<ForwardSequence>(seq), pred);
+        }
+    };
+
+    struct upper_bound_fn
+    {
+        template <class ForwardSequence, class T, class Compare = std::less<>>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, T const & value, Compare cmp = Compare{}) const
+        {
+            auto const pred = [&value, &cmp](auto const & x) { return !cmp(value, x); };
+
+            return ::sayan::partition_point_fn{}(std::forward<ForwardSequence>(seq), pred);
+        }
+    };
+
+    struct equal_range_fn
+    {
+        template <class ForwardSequence, class T, class Compare = std::less<>>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, T const & value, Compare cmp = Compare{}) const
+        {
+            auto cur = ::sayan::upper_bound_fn{}(std::forward<ForwardSequence>(seq), value, cmp);
+            cur = cur.traversed(sayan::front);
+            return ::sayan::lower_bound_fn{}(std::move(cur), value, std::move(cmp));
+        }
+    };
+
+    struct binary_search_fn
+    {
+        template <class ForwardSequence, class T, class Compare = std::less<>>
+        bool operator()(ForwardSequence && seq, T const & value, Compare cmp = Compare{}) const
+        {
+            auto cur = ::sayan::lower_bound_fn{}(std::forward<ForwardSequence>(seq), value,
+                                                 std::move(cmp));
+            return !!cur && !cmp(value, *cur);
         }
     };
 
@@ -1203,15 +1364,25 @@ inline namespace v1
         constexpr auto const & replace_copy = static_const<replace_copy_fn>;
         constexpr auto const & replace_copy_if = static_const<replace_copy_if_fn>;
 
+        constexpr auto const & swap_ranges = static_const<swap_ranges_fn>;
+        constexpr auto const & rotate = static_const<rotate_fn>;
+        constexpr auto const & rotate_copy = static_const<rotate_copy_fn>;
+
         constexpr auto const & unique = static_const<unique_fn>;
         constexpr auto const & unique_copy = static_const<unique_copy_fn>;
 
         constexpr auto const & is_partitioned = static_const<is_partitioned_fn>;
         constexpr auto const & partition = static_const<partition_fn>;
         constexpr auto const & partition_copy = static_const<partition_copy_fn>;
+        constexpr auto const & partition_point = static_const<partition_point_fn>;
 
         constexpr auto const & is_sorted = static_const<is_sorted_fn>;
         constexpr auto const & is_sorted_until = static_const<is_sorted_until_fn>;
+
+        constexpr auto const & lower_bound = static_const<lower_bound_fn>;
+        constexpr auto const & upper_bound = static_const<upper_bound_fn>;
+        constexpr auto const & equal_range = static_const<equal_range_fn>;
+        constexpr auto const & binary_search = static_const<binary_search_fn>;
 
         constexpr auto const & merge = static_const<merge_fn>;
         constexpr auto const & includes = static_const<includes_fn>;

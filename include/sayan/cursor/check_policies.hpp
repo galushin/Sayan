@@ -18,6 +18,15 @@ inline namespace v1
                 throw std::logic_error("cursor must be not empty");
             }
         }
+
+        template <class Iterator, class Sentinel>
+        static void ensure_equal(Iterator i, Sentinel s)
+        {
+            if(i != s)
+            {
+                throw std::logic_error("must be equal");
+            }
+        }
     };
 }
 //inline namespace v1

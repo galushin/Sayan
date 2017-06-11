@@ -150,10 +150,72 @@ TEST_CASE("algorithm/partition")
     CHECK(::sayan::is_partitioned(xs, pred));
 
     CHECK(std::all_of(xs.begin(), r.begin(), pred));
-    // @todo Проверка в стиле sayan, нужно traversed_front
+    CHECK(sayan::all_of(r.traversed(sayan::front), pred));
 
     CHECK(std::none_of(r.begin(), r.end(), pred));
     CHECK(sayan::none_of(r, pred));
 
     CHECK(r.end() == xs.end());
+}
+
+TEST_CASE("algorithm/partition_point")
+{
+    auto const pred = [](int x){ return x % 2 == 0;};
+
+    auto xs = [&]()
+    {
+        std::forward_list<int> xs{1,2,3,5,6,8,9,11,13,14};
+        std::partition(xs.begin(), xs.end(), pred);
+        return xs;
+    }();
+
+    auto const r_std = std::partition_point(xs.begin(), xs.end(), pred);
+    auto const r_sayan = sayan::partition_point(xs, pred);
+
+    CHECK(r_sayan.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r_sayan.begin() == r_std);
+    CHECK(r_sayan.end() == xs.end());
+}
+
+TEST_CASE("algorithm/partition_point: empty sequence")
+{
+    auto const pred = [](int x){ return x % 2 == 0;};
+
+    std::forward_list<int> xs;
+
+    auto const r_sayan = sayan::partition_point(xs, pred);
+
+    CHECK(r_sayan.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r_sayan.begin() == xs.end());
+    CHECK(r_sayan.end() == xs.end());
+}
+
+TEST_CASE("algorithm/partition_point: all true")
+{
+    auto const pred = [](int x){ return x % 2 == 0;};
+
+    std::forward_list<int> xs{2,6,8,14};
+
+    CHECK(sayan::all_of(xs, pred));
+
+    auto const r_sayan = sayan::partition_point(xs, pred);
+
+    CHECK(r_sayan.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r_sayan.begin() == xs.end());
+    CHECK(r_sayan.end() == xs.end());
+}
+
+TEST_CASE("algorithm/partition_point: all false")
+{
+    auto const pred = [](int x){ return x % 2 == 0;};
+
+    std::forward_list<int> xs{1,3,5,9,11,13};
+
+    CHECK(sayan::none_of(xs, pred));
+
+    auto const r_sayan = sayan::partition_point(xs, pred);
+
+    CHECK(r_sayan.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r_sayan.begin() == xs.begin());
+    CHECK(r_sayan.end() == xs.end());
 }

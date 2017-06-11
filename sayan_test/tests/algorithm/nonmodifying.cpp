@@ -233,10 +233,9 @@ TEST_CASE("algorithm/find_first_of")
     auto r_std = std::find_first_of(whats.begin(), whats.end(), where.begin(), where.end());
     auto r = ::sayan::find_first_of(whats, where);
 
+    CHECK(r.traversed_begin() == whats.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == whats.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/find_first_of: custom predicate, success")
@@ -252,11 +251,10 @@ TEST_CASE("algorithm/find_first_of: custom predicate, success")
     CHECK(r_std != whats.end());
     CHECK(!!r);
 
+    CHECK(r.traversed_begin() == whats.begin());
     CHECK(r.begin() == r_std);
     CHECK(*r.begin() == *r_std);
     CHECK(r.end() == whats.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/find_first_of: custom predicate, fail")
@@ -272,10 +270,9 @@ TEST_CASE("algorithm/find_first_of: custom predicate, fail")
     CHECK(r_std == whats.end());
     CHECK(!r);
 
+    CHECK(r.traversed_begin() == whats.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == whats.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/adjacent_find")
@@ -286,10 +283,9 @@ TEST_CASE("algorithm/adjacent_find")
 
     auto const r = sayan::adjacent_find(xs);
 
+    CHECK(r.traversed_begin() == xs.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == xs.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/adjacent_find: custom predicate, fail")
@@ -303,10 +299,9 @@ TEST_CASE("algorithm/adjacent_find: custom predicate, fail")
     CHECK(r_std == xs.end());
     CHECK(!r);
 
+    CHECK(r.traversed_begin() == xs.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == xs.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/adjacent_find: custom predicate, success")
@@ -320,10 +315,9 @@ TEST_CASE("algorithm/adjacent_find: custom predicate, success")
     CHECK(r_std != xs.end());
     CHECK(!!r);
 
+    CHECK(r.traversed_begin() == xs.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == xs.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/search")
@@ -334,10 +328,9 @@ TEST_CASE("algorithm/search")
     auto const r_std = std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end());
     auto const r = ::sayan::search(haystack, needle);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/search: custom predicate, success")
@@ -354,10 +347,9 @@ TEST_CASE("algorithm/search: custom predicate, success")
     CHECK(r_std != haystack.end());
     CHECK(!!r);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/search: custom predicate, fail")
@@ -374,10 +366,9 @@ TEST_CASE("algorithm/search: custom predicate, fail")
     CHECK(r_std == haystack.end());
     CHECK(!r);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/search: custom predicate, empty needle")
@@ -391,10 +382,9 @@ TEST_CASE("algorithm/search: custom predicate, empty needle")
 
     auto const r = ::sayan::search(haystack, needle, pred);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK(r.begin() == haystack.begin());
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/search_n")
@@ -406,10 +396,10 @@ TEST_CASE("algorithm/search_n")
     auto const r_std = std::search_n(xs.begin(), xs.end(), n, value);
     auto const r = sayan::search_n(xs, n, value);
 
+    CHECK(r.traversed_begin() == xs.begin());
     CHECK(r.begin() == r_std);
     CHECK(std::distance(xs.begin(), r.begin()) == std::distance(xs.begin(), r_std));
     CHECK(r.end() == xs.end());
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/search_n: custom predicate, success")
@@ -426,10 +416,9 @@ TEST_CASE("algorithm/search_n: custom predicate, success")
     CHECK(r_std != haystack.end());
     CHECK(!!r);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK((r.begin() - haystack.begin()) == (r_std - haystack.begin()));
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/search_n: custom predicate, fail")
@@ -446,11 +435,10 @@ TEST_CASE("algorithm/search_n: custom predicate, fail")
     CHECK(r_std == haystack.end());
     CHECK(!r);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK((r.begin() - haystack.begin()) == (r_std - haystack.begin()));
     CHECK(r.begin() == r_std);
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/search_n: custom predicate, empty needle")
@@ -463,10 +451,9 @@ TEST_CASE("algorithm/search_n: custom predicate, empty needle")
 
     auto const r = ::sayan::search_n(haystack, n, value, pred);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK(r.begin() == haystack.begin());
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/find_end")
@@ -477,10 +464,9 @@ TEST_CASE("algorithm/find_end")
     auto const r_std = std::find_end(haystack.begin(), haystack.end(), needle.begin(), needle.end());
     auto const r = ::sayan::find_end(haystack, needle);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/find_end: custom predicate, success")
@@ -497,10 +483,9 @@ TEST_CASE("algorithm/find_end: custom predicate, success")
     CHECK(r_std != haystack.end());
     CHECK(!!r);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/find_end: custom predicate, fail")
@@ -517,10 +502,9 @@ TEST_CASE("algorithm/find_end: custom predicate, fail")
     CHECK(r_std == haystack.end());
     CHECK(!r);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK(r.begin() == r_std);
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithm/find_end: custom predicate, empty needle")
@@ -534,10 +518,9 @@ TEST_CASE("algorithm/find_end: custom predicate, empty needle")
 
     auto const r = ::sayan::find_end(haystack, needle, pred);
 
+    CHECK(r.traversed_begin() == haystack.begin());
     CHECK(r.begin() == haystack.end());
     CHECK(r.end() == haystack.end());
-
-    // @todo Проверка пройденной части последовательности
 }
 
 TEST_CASE("algorithms/nonmodifying/count")

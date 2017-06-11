@@ -85,9 +85,45 @@ inline namespace v1
         }
     };
 
+    struct advance_fn
+    {
+        template <class InputCursor>
+        void operator()(InputCursor & cur, difference_type_t<InputCursor> n) const
+        {
+            for(; n > 0; -- n)
+            {
+                ++ cur;
+            }
+        }
+    };
+
+    struct cursor_swap_fn
+    {
+        template <class Cursor1, class Cursor2>
+        void operator()(Cursor1 const & c1, Cursor2 const & c2) const
+        {
+            using std::swap;
+            swap(*c1, *c2);
+        }
+    };
+
+    struct next_fn
+    {
+        template <class Cursor>
+        Cursor
+        operator()(Cursor c, difference_type_t<Cursor> n = difference_type_t<Cursor>{1}) const
+        {
+            ::sayan::advance_fn{}(c, n);
+            return c;
+        }
+    };
+
     namespace
     {
         constexpr auto const & size = static_const<size_fn>;
+        constexpr auto const & advance = static_const<advance_fn>;
+        constexpr auto const & next = static_const<next_fn>;
+        constexpr auto const & cursor_swap = static_const<cursor_swap_fn>;
     }
 }
 // namespace v1

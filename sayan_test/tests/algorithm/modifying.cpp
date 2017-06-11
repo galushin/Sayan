@@ -2,6 +2,8 @@
 
 #include <sayan/cursor/back_inserter.hpp>
 
+#include <algorithm>
+
 #include <forward_list>
 #include <catch/catch.hpp>
 
@@ -433,7 +435,9 @@ TEST_CASE("algorithm/remove")
 
     CHECK(xs_head == xs_std_head);
 
-    // @todo Проверка пройденной части, в том числе для части контейнера
+    CHECK(r.traversed_begin() == xs.begin());
+    CHECK(std::distance(xs.begin(), r.begin()) == std::distance(xs_std.begin(), r_std));
+    CHECK(r.end() == xs.end());
 }
 
 TEST_CASE("algorithm/remove_if")
@@ -452,7 +456,9 @@ TEST_CASE("algorithm/remove_if")
 
     CHECK(xs_head == xs_std_head);
 
-    // @todo Проверка пройденной части, в том числе для части контейнера
+    CHECK(r.traversed_begin() == xs.begin());
+    CHECK(std::distance(xs.begin(), r.begin()) == std::distance(xs_std.begin(), r_std));
+    CHECK(r.end() == xs.end());
 }
 
 TEST_CASE("algorithm/remove_if: nothing to remove")
@@ -468,10 +474,9 @@ TEST_CASE("algorithm/remove_if: nothing to remove")
 
     CHECK(xs == xs_old);
 
+    CHECK(r.traversed_begin() == xs.begin());
     CHECK(r.begin() == xs.end());
     CHECK(r.end() == xs.end());
-
-    // @todo Проверка пройденной части, в том числе для части контейнера
 }
 
 TEST_CASE("algorithm/remove_copy")
@@ -692,10 +697,9 @@ TEST_CASE("algorithm/replace")
 
     CHECK(xs == xs_std);
 
+    CHECK(result.traversed_begin() == xs.begin());
     CHECK(result.begin() == xs.end());
     CHECK(result.end() == xs.end());
-
-    // @todo Проверить пройденную часть
 }
 
 TEST_CASE("algorithm/replace_if")
@@ -712,13 +716,10 @@ TEST_CASE("algorithm/replace_if")
 
     CHECK(xs == xs_std);
 
+    CHECK(result.traversed_begin() == xs.begin());
     CHECK(result.begin() == xs.end());
     CHECK(result.end() == xs.end());
-
-    // @todo Проверить пройденную часть
 }
-
-// @todo тест replace/replace_if для курсоров, охватывающих не всю последовательность
 
 TEST_CASE("algorithm/replace_copy")
 {
@@ -877,10 +878,9 @@ TEST_CASE("algorithm/unique")
     std::vector<int> out_std(xs_std.begin(), r_std);
     std::vector<int> out(xs.begin(), r.begin());
 
+    CHECK(r.traversed_begin() == xs.begin());
     CHECK(out == out_std);
     CHECK(r.end() == xs.end());
-
-    // @todo Проверка пройденной части
 }
 
 TEST_CASE("algorithm/unique: custom predicate")
@@ -896,10 +896,9 @@ TEST_CASE("algorithm/unique: custom predicate")
     std::string out_std(xs_std.begin(), r_std);
     std::string out(xs.begin(), r.begin());
 
+    CHECK(r.traversed_begin() == xs.begin());
     CHECK(out == out_std);
     CHECK(r.end() == xs.end());
-
-    // @todo Проверка пройденной части
 }
 
 TEST_CASE("algorithm/unique_copy")
@@ -1052,4 +1051,211 @@ TEST_CASE("algorithm/unique_copy: custom predicate, to shorter")
 
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
+}
+
+TEST_CASE("algorithm/swap_ranges")
+{
+    std::forward_list<int> xs1{1,3,5,7};
+    std::forward_list<int> xs2{2,4,6,8};
+
+    auto const xs1_old = xs1;
+    auto const xs2_old = xs2;
+
+    auto const r = sayan::swap_ranges(xs1, xs2);
+
+    CHECK(std::get<0>(r).traversed_begin() == xs1.begin());
+    CHECK(std::get<0>(r).begin() == xs1.end());
+    CHECK(std::get<0>(r).end() == xs1.end());
+
+    CHECK(std::get<1>(r).traversed_begin() == xs2.begin());
+    CHECK(std::get<1>(r).begin() == xs2.end());
+    CHECK(std::get<1>(r).end() == xs2.end());
+
+    CHECK(xs1 == xs2_old);
+    CHECK(xs2 == xs1_old);
+}
+
+TEST_CASE("algorithm/swap_ranges: different sizes")
+{
+    std::vector<int> xs1{1,3,5,7,9};
+    std::vector<int> xs2{2,4,6,8};
+
+    auto const xs1_old = xs1;
+    auto const xs2_old = xs2;
+
+    auto const n = std::min(xs1.size(), xs2.size());
+
+    auto const r = sayan::swap_ranges(xs1, xs2);
+
+    CHECK(std::get<0>(r).traversed_begin() == xs1.begin());
+    CHECK(std::get<0>(r).begin() == xs1.begin() + n);
+    CHECK(std::get<0>(r).end() == xs1.end());
+
+    CHECK(std::get<1>(r).traversed_begin() == xs2.begin());
+    CHECK(std::get<1>(r).begin() == xs2.begin() + n);
+    CHECK(std::get<1>(r).end() == xs2.end());
+
+    CHECK(::std::equal(xs1.begin(), xs1.begin() + n, xs2_old.begin(), xs2_old.begin() + n));
+    CHECK(::std::equal(xs2.begin(), xs2.begin() + n, xs1_old.begin(), xs1_old.begin() + n));
+    CHECK(::std::equal(xs1.begin() + n, xs1.end(), xs1_old.begin() + n, xs1_old.end()));
+    CHECK(::std::equal(xs2.begin() + n, xs2.end(), xs2_old.begin() + n, xs2_old.end()));
+
+    sayan::swap_ranges(xs2, xs1);
+
+    CHECK(xs1 == xs1_old);
+    CHECK(xs2 == xs2_old);
+}
+
+TEST_CASE("algorithm/rotate: empty parts")
+{
+    std::forward_list<int> xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto const xs_old = xs;
+
+    auto const cur = ::sayan::cursor(xs);
+
+    auto const r1 = sayan::rotate(cur);
+
+    CHECK(xs == xs_old);
+    CHECK(r1.begin() == xs.end());
+
+    auto c = cur;
+    c.exhaust(sayan::front);
+
+    auto const r2 = sayan::rotate(c);
+
+    CHECK(xs == xs_old);
+    CHECK(r2.begin() == xs.begin());
+}
+
+TEST_CASE("algorithm/rotate: equal parts")
+{
+    std::vector<int> xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    auto xs_sayan = xs;
+
+    auto const n = std::distance(xs.begin(), xs.end());
+    auto const d = n / 2;
+    CHECK(d == n - d);
+
+    // std
+    auto const r_std = std::rotate(xs.begin(), std::next(xs.begin(), d), xs.end());
+
+    // sayan
+    auto const r = ::sayan::rotate(::sayan::next(::sayan::cursor(xs_sayan), d));
+
+    // Проверки
+    CHECK(xs_sayan == xs);
+
+    CHECK((r.traversed(sayan::front).begin() - xs_sayan.begin()) == 0);
+    CHECK((r.begin() - xs_sayan.begin()) == (r_std - xs.begin()));
+    CHECK((xs_sayan.end() - r.end()) == 0);
+}
+
+TEST_CASE("algorithm/rotate: first shorter")
+{
+    // Настройки
+    std::vector<int> xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto xs_sayan = xs;
+
+    auto const n = std::distance(xs.begin(), xs.end());
+    auto const d = n / 3;
+
+    // std
+    auto const r_std = std::rotate(xs.begin(), std::next(xs.begin(), d), xs.end());
+
+    // sayan
+    auto cur = ::sayan::cursor(xs_sayan);
+    ::sayan::advance(cur, d);
+
+    auto const r = ::sayan::rotate(cur);
+
+    // Проверки
+    CHECK(xs_sayan == xs);
+
+    CHECK((r.traversed(sayan::front).begin() - xs_sayan.begin()) == 0);
+    CHECK((r.begin() - xs_sayan.begin()) == (r_std - xs.begin()));
+    CHECK((xs_sayan.end() - r.end()) == 0);
+}
+
+TEST_CASE("algorithm/rotate: first longer")
+{
+    // Настройки
+    std::vector<int> xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto xs_sayan = xs;
+
+    auto const n = std::distance(xs.begin(), xs.end());
+    auto const d = n - n / 3;
+
+    // std
+    auto const r_std = std::rotate(xs.begin(), std::next(xs.begin(), d), xs.end());
+
+    // sayan
+    auto cur = ::sayan::cursor(xs_sayan);
+    ::sayan::advance(cur, d);
+
+    auto const r = ::sayan::rotate(cur);
+
+    // Проверки
+    CHECK(xs_sayan == xs);
+
+    CHECK((r.traversed(sayan::front).begin() - xs_sayan.begin()) == 0);
+    CHECK((r.begin() - xs_sayan.begin()) == (r_std - xs.begin()));
+    CHECK((xs_sayan.end() - r.end()) == 0);
+}
+
+TEST_CASE("algorithm/rotate_copy")
+{
+    // Настройки
+    std::forward_list<int> const xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto const n = std::distance(xs.begin(), xs.end());
+    auto const d = n / 3;
+
+    // std
+    std::vector<int> out_std;
+    std::rotate_copy(xs.begin(), std::next(xs.begin(), d), xs.end(),
+                     std::back_inserter(out_std));
+
+    // sayan
+    auto cur = ::sayan::cursor(xs);
+    ::sayan::advance(cur, d);
+
+    std::vector<int> out_sayan;
+    auto const r = ::sayan::rotate_copy(cur, sayan::back_inserter(out_sayan)).first;
+
+    // Проверки
+    CHECK(out_sayan == out_std);
+
+    CHECK(r.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r.begin() == xs.end());
+    CHECK(r.end() == xs.end());
+}
+
+TEST_CASE("algorithm/rotate_copy: to longer")
+{
+    // Настройки
+    std::forward_list<int> const xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto const n = std::distance(xs.begin(), xs.end());
+    auto const d = n / 3;
+
+    std::vector<int> dest_std(2*n, -1);
+    auto dest_sayan = dest_std;
+
+    // std
+    auto const r_std = std::rotate_copy(xs.begin(), std::next(xs.begin(), d), xs.end(),
+                                        dest_std.begin());
+
+    // sayan
+    auto cur = ::sayan::cursor(xs);
+    ::sayan::advance(cur, d);
+    auto const r = ::sayan::rotate_copy(cur, dest_sayan);
+
+    // Проверки
+    CHECK(dest_sayan == dest_std);
+
+    CHECK(r.first.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r.first.begin() == xs.end());
+    CHECK(r.first.end() == xs.end());
+
+    CHECK(r.second.traversed(sayan::front).begin() == dest_sayan.begin());
+    CHECK((r.second.begin() - dest_sayan.begin()) == (r_std - dest_std.begin()));
+    CHECK(r.second.end() == dest_sayan.end());
 }
