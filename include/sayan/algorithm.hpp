@@ -225,6 +225,113 @@ inline namespace v1
         }
     };
 
+    struct search_fn
+    {
+        template <class ForwardSequence1, class ForwardSequence2,
+                  class BinaryPredicate = std::equal_to<>>
+        safe_cursor_type_t<ForwardSequence1>
+        operator()(ForwardSequence1 && where, ForwardSequence2 && what,
+                   BinaryPredicate bin_pred = BinaryPredicate{}) const
+        {
+            auto cur = sayan::cursor_fwd<ForwardSequence1>(where);
+            auto const s_cur = sayan::cursor_fwd<ForwardSequence2>(what);
+
+            for(; !!cur; ++ cur)
+            {
+                auto t = ::sayan::mismatch_fn{}(s_cur, cur, bin_pred);
+
+                if(!::std::get<0>(t))
+                {
+                    break;
+                }
+            }
+
+            return cur;
+        }
+    };
+
+    struct search_n_fn
+    {
+        template <class ForwardSequence, class Size, class T,
+                  class BinaryPredicate = std::equal_to<>>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, Size const n, T const & value,
+                   BinaryPredicate bin_pred = BinaryPredicate{}) const
+        {
+            auto cur = sayan::cursor_fwd<ForwardSequence>(seq);
+            auto k = n;
+
+            auto i = cur;
+            for(; !!i; ++ i)
+            {
+                if(k == 0)
+                {
+                    return cur;
+                }
+
+                if(!bin_pred(*i, value))
+                {
+                    cur = i;
+                    ++ cur;
+                    k = n;
+                }
+                else
+                {
+                    -- k;
+                }
+            }
+
+            return i;
+        }
+    };
+
+    struct find_end_fn
+    {
+        template <class ForwardSequence1, class ForwardSequence2,
+                  class BinaryPredicate = std::equal_to<>>
+        safe_cursor_type_t<ForwardSequence1>
+        operator()(ForwardSequence1 && where, ForwardSequence2 && what,
+                   BinaryPredicate bin_pred = BinaryPredicate{}) const
+        {
+            auto cur = sayan::cursor_fwd<ForwardSequence1>(where);
+            auto const s_cur = sayan::cursor_fwd<ForwardSequence2>(what);
+
+            if(!s_cur)
+            {
+                // @todo Оптимизировать за счёт введения операции курсора
+                for(; !!cur; ++cur)
+                {}
+
+                return cur;
+            }
+
+            auto result = ::sayan::search_fn{}(std::move(cur), s_cur);
+
+            if(!result)
+            {
+                return result;
+            }
+
+            cur = result;
+            ++ cur;
+
+            for (;;)
+            {
+                cur = ::sayan::search_fn{}(std::move(cur), s_cur);
+
+                if(!cur)
+                {
+                    break;
+                }
+
+                result = cur;
+                ++ cur;
+            }
+
+            return result;
+        }
+    };
+
     struct is_partitioned_fn
     {
         template <class InputSequence, class UnaryPredicate>
@@ -679,6 +786,37 @@ inline namespace v1
         }
     };
 
+    struct partition_fn
+    {
+        template <class ForwardSequence, class UnaryPredicate>
+        safe_cursor_type_t<ForwardSequence>
+        operator()(ForwardSequence && seq, UnaryPredicate pred) const
+        {
+            auto cur_false = ::sayan::find_if_not_fn{}(std::forward<ForwardSequence>(seq), pred);
+
+            if(!cur_false)
+            {
+                return cur_false;
+            }
+
+            auto cur = cur_false;
+            ++ cur;
+
+            for(; !!cur; ++ cur)
+            {
+                if(pred(*cur))
+                {
+                    // @todo Обобщить механизм обмена
+                    using std::swap;
+                    swap(*cur_false, *cur);
+                    ++cur_false;
+                }
+            }
+
+            return cur_false;
+        }
+    };
+
     struct is_sorted_until_fn
     {
         template <class ForwardSequence, class Compare = std::less<>>
@@ -1037,9 +1175,13 @@ inline namespace v1
         constexpr auto const & find_if = static_const<find_if_fn>;
         constexpr auto const & find_if_not = static_const<find_if_not_fn>;
 
+        constexpr auto const & find_end = static_const<find_end_fn>;
         constexpr auto const & find_first_of = static_const<find_first_of_fn>;
 
         constexpr auto const & adjacent_find = static_const<adjacent_find_fn>;
+
+        constexpr auto const & search = static_const<search_fn>;
+        constexpr auto const & search_n = static_const<search_n_fn>;
 
         constexpr auto const & copy = static_const<copy_fn>;
         constexpr auto const & copy_if = static_const<copy_if_fn>;
@@ -1065,6 +1207,7 @@ inline namespace v1
         constexpr auto const & unique_copy = static_const<unique_copy_fn>;
 
         constexpr auto const & is_partitioned = static_const<is_partitioned_fn>;
+        constexpr auto const & partition = static_const<partition_fn>;
         constexpr auto const & partition_copy = static_const<partition_copy_fn>;
 
         constexpr auto const & is_sorted = static_const<is_sorted_fn>;

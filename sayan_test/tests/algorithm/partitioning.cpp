@@ -1,6 +1,7 @@
 #include <sayan/algorithm.hpp>
 
 #include <catch/catch.hpp>
+#include <forward_list>
 
 TEST_CASE("algorithm/partition_copy")
 {
@@ -132,4 +133,27 @@ TEST_CASE("algorithm/partition_copy: stops by out_false")
     CHECK(std::get<1>(result).end() == out_true.end());
     CHECK(std::get<2>(result).begin() == out_false.begin() + n_out_false);
     CHECK(std::get<2>(result).end() == out_false.end());
+}
+
+TEST_CASE("algorithm/partition")
+{
+    std::forward_list<int> xs{1,2,3,5,6,8,9,11,13,14};
+    auto const xs_old = xs;
+    auto const pred = [](auto const & x) { return x % 2 == 0; };
+
+    auto const r = sayan::partition(xs, pred);
+
+    CHECK(::std::is_permutation(xs.begin(), xs.end(), xs_old.begin(), xs_old.end()));
+    CHECK(::sayan::is_permutation(xs, xs_old));
+
+    CHECK(::std::is_partitioned(xs.begin(), xs.end(), pred));
+    CHECK(::sayan::is_partitioned(xs, pred));
+
+    CHECK(std::all_of(xs.begin(), r.begin(), pred));
+    // @todo Проверка в стиле sayan, нужно traversed_front
+
+    CHECK(std::none_of(r.begin(), r.end(), pred));
+    CHECK(sayan::none_of(r, pred));
+
+    CHECK(r.end() == xs.end());
 }

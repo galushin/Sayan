@@ -326,6 +326,220 @@ TEST_CASE("algorithm/adjacent_find: custom predicate, success")
     // @todo Проверка пройденной части последовательности
 }
 
+TEST_CASE("algorithm/search")
+{
+    std::forward_list<int> const haystack{2,7,1,8,2,8,1,8,2,8,4,6};
+    std::forward_list<int> const needle{1,8,2,8};
+
+    auto const r_std = std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+    auto const r = ::sayan::search(haystack, needle);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/search: custom predicate, success")
+{
+    std::string const haystack{"ALGORITHMS/nonmodifying/count: auto-cursor"};
+    std::string const needle{"or"};
+
+    auto const pred = [](auto x, auto y) { return std::tolower(x) == std::tolower(y);};
+
+    auto const r_std = std::search(haystack.begin(), haystack.end(),
+                                   needle.begin(), needle.end(), pred);
+    auto const r = ::sayan::search(haystack, needle, pred);
+
+    CHECK(r_std != haystack.end());
+    CHECK(!!r);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/search: custom predicate, fail")
+{
+    std::string const haystack{"ALGORITHMS/nonmodifying/count: auto-cursor"};
+    std::string const needle{"order"};
+
+    auto const pred = [](auto x, auto y) { return std::tolower(x) == std::tolower(y);};
+
+    auto const r_std = std::search(haystack.begin(), haystack.end(),
+                                   needle.begin(), needle.end(), pred);
+    auto const r = ::sayan::search(haystack, needle, pred);
+
+    CHECK(r_std == haystack.end());
+    CHECK(!r);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/search: custom predicate, empty needle")
+{
+    std::string const haystack{"ALGORITHMS/nonmodifying/count: auto-cursor"};
+    std::string const needle{};
+
+    CHECK(needle.empty());
+
+    auto const pred = [](auto x, auto y) { return std::tolower(x) == std::tolower(y);};
+
+    auto const r = ::sayan::search(haystack, needle, pred);
+
+    CHECK(r.begin() == haystack.begin());
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/search_n")
+{
+    std::forward_list<int> const xs{0,1,0,1,1,0,0,1,1,1,0,0};
+    auto const n = 2;
+    auto const value = int{1};
+
+    auto const r_std = std::search_n(xs.begin(), xs.end(), n, value);
+    auto const r = sayan::search_n(xs, n, value);
+
+    CHECK(r.begin() == r_std);
+    CHECK(std::distance(xs.begin(), r.begin()) == std::distance(xs.begin(), r_std));
+    CHECK(r.end() == xs.end());
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/search_n: custom predicate, success")
+{
+    std::string const haystack{"succeSs, success"};
+    auto const n = 2;
+    auto const value = 's';
+
+    auto const pred = [](auto x, auto y) { return std::tolower(x) == std::tolower(y);};
+
+    auto const r_std = std::search_n(haystack.begin(), haystack.end(), n, value, pred);
+    auto const r = ::sayan::search_n(haystack, n, value, pred);
+
+    CHECK(r_std != haystack.end());
+    CHECK(!!r);
+
+    CHECK((r.begin() - haystack.begin()) == (r_std - haystack.begin()));
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/search_n: custom predicate, fail")
+{
+    std::string const haystack{"succeSs, success"};
+    auto const n = 3;
+    auto const value = 's';
+
+    auto const pred = [](auto x, auto y) { return std::tolower(x) == std::tolower(y);};
+
+    auto const r_std = std::search_n(haystack.begin(), haystack.end(), n, value, pred);
+    auto const r = ::sayan::search_n(haystack, n, value, pred);
+
+    CHECK(r_std == haystack.end());
+    CHECK(!r);
+
+    CHECK((r.begin() - haystack.begin()) == (r_std - haystack.begin()));
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/search_n: custom predicate, empty needle")
+{
+    std::string const haystack{"predicate"};
+    auto const n = 0;
+    auto const value = 's';
+
+    auto const pred = [](auto x, auto y) { return std::tolower(x) == std::tolower(y);};
+
+    auto const r = ::sayan::search_n(haystack, n, value, pred);
+
+    CHECK(r.begin() == haystack.begin());
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/find_end")
+{
+    std::forward_list<int> const haystack{2,7,1,8,2,8,1,8,2,8,4,6};
+    std::forward_list<int> const needle{1,8,2,8};
+
+    auto const r_std = std::find_end(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+    auto const r = ::sayan::find_end(haystack, needle);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/find_end: custom predicate, success")
+{
+    std::string const haystack{"ALGORITHMS/nonmodifying/count: auto-cursor"};
+    std::string const needle{"or"};
+
+    auto const pred = [](auto x, auto y) { return std::tolower(x) == std::tolower(y);};
+
+    auto const r_std = std::find_end(haystack.begin(), haystack.end(),
+                                   needle.begin(), needle.end(), pred);
+    auto const r = ::sayan::find_end(haystack, needle, pred);
+
+    CHECK(r_std != haystack.end());
+    CHECK(!!r);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/find_end: custom predicate, fail")
+{
+    std::string const haystack{"ALGORITHMS/nonmodifying/count: auto-cursor"};
+    std::string const needle{"order"};
+
+    auto const pred = [](auto x, auto y) { return std::tolower(x) == std::tolower(y);};
+
+    auto const r_std = std::find_end(haystack.begin(), haystack.end(),
+                                   needle.begin(), needle.end(), pred);
+    auto const r = ::sayan::find_end(haystack, needle, pred);
+
+    CHECK(r_std == haystack.end());
+    CHECK(!r);
+
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
+TEST_CASE("algorithm/find_end: custom predicate, empty needle")
+{
+    std::string const haystack{"ALGORITHMS/nonmodifying/count: auto-cursor"};
+    std::string const needle{};
+
+    CHECK(needle.empty());
+
+    auto const pred = [](auto x, auto y) { return std::tolower(x) == std::tolower(y);};
+
+    auto const r = ::sayan::find_end(haystack, needle, pred);
+
+    CHECK(r.begin() == haystack.end());
+    CHECK(r.end() == haystack.end());
+
+    // @todo Проверка пройденной части последовательности
+}
+
 TEST_CASE("algorithms/nonmodifying/count")
 {
     std::vector<std::string> const strs{"", "generic_programming",
