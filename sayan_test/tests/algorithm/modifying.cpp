@@ -2,10 +2,10 @@
 
 #include <sayan/cursor/back_inserter.hpp>
 
+#include <algorithm>
+
 #include <forward_list>
 #include <catch/catch.hpp>
-
-#include <iostream>
 
 TEST_CASE("algorithm/copy: to infinite")
 {
@@ -47,10 +47,12 @@ TEST_CASE("algorithm/copy: to shorter")
 
     CHECK(src.substr(0, dest.size()) == dest);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
     CHECK(std::get<0>(result).end() == src.end());
 
     CHECK(std::get<1>(result).empty());
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -69,9 +71,11 @@ TEST_CASE("algorithm/copy: to longer")
     CHECK(dest.substr(0, src.size()) == src);
     CHECK(dest.substr(src.size()) == dest_old.substr(src.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -136,9 +140,11 @@ TEST_CASE("cursors/move: to longer")
 
     CHECK(dest_ns == ns);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -177,9 +183,11 @@ TEST_CASE("cursors/move: to shorter")
 
     CHECK(dest_ns == std::vector<int>(ns.begin(), ns.begin() + dest.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -215,10 +223,12 @@ TEST_CASE("algorithm/transform: to shorter")
 
     CHECK(dest == r_std.substr(0, dest.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
     CHECK(std::get<0>(result).end() == src.end());
 
     CHECK(std::get<1>(result).empty());
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -241,9 +251,11 @@ TEST_CASE("algorithm/transform: to longer")
     CHECK(dest.substr(0, src.size()) == r_std);
     CHECK(dest.substr(src.size()) == dest_old.substr(src.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -295,12 +307,15 @@ TEST_CASE("algorithm/transform2: in1 shorter")
     CHECK(std::equal(out.begin() + n, out.end(),
                      out_old.begin() + n, out_old.end()));
 
+    CHECK(std::get<0>(result).traversed_begin() == in1.begin());
     CHECK(std::get<0>(result).begin() == in1.end());
     CHECK(std::get<0>(result).end() == in1.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == in2.begin());
     CHECK(std::get<1>(result).begin() == in2.begin() + n);
     CHECK(std::get<1>(result).end() == in2.end());
 
+    CHECK(std::get<2>(result).traversed_begin() == out.begin());
     CHECK(std::get<2>(result).begin() == out.begin() + n);
     CHECK(std::get<2>(result).end() == out.end());
 }
@@ -332,12 +347,15 @@ TEST_CASE("algorithm/transform2: in2 shorter")
     CHECK(std::equal(out.begin() + n, out.end(),
                      out_old.begin() + n, out_old.end()));
 
+    CHECK(std::get<0>(result).traversed_begin() == in1.begin());
     CHECK(std::get<0>(result).begin() == in1.begin() + n);
     CHECK(std::get<0>(result).end() == in1.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == in2.begin());
     CHECK(std::get<1>(result).begin() == in2.end());
     CHECK(std::get<1>(result).end() == in2.end());
 
+    CHECK(std::get<2>(result).traversed_begin() == out.begin());
     CHECK(std::get<2>(result).begin() == out.begin() + n);
     CHECK(std::get<2>(result).end() == out.end());
 }
@@ -363,12 +381,15 @@ TEST_CASE("algorithm/transform2: out shorter")
 
     CHECK(out == out_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == in1.begin());
     CHECK(std::get<0>(result).begin() == in1.begin() + n);
     CHECK(std::get<0>(result).end() == in1.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == in2.begin());
     CHECK(std::get<1>(result).begin() == in2.begin() + n);
     CHECK(std::get<1>(result).end() == in2.end());
 
+    CHECK(std::get<2>(result).traversed_begin() == out.begin());
     CHECK(std::get<2>(result).begin() == out.end());
     CHECK(std::get<2>(result).end() == out.end());
 }
@@ -418,6 +439,65 @@ TEST_CASE("algorithm/generate")
     sayan::generate(xs, gen);
 
     CHECK(xs == xs_std);
+}
+
+TEST_CASE("algorithm/remove")
+{
+    std::forward_list<int> xs_std{1, 2, -1, 3, -1, 4, - 1, 5, 6};
+    auto xs = xs_std;
+
+    auto const value = int{-1};
+
+    auto r_std = std::remove(xs_std.begin(), xs_std.end(), value);
+    std::vector<int> xs_std_head(xs_std.begin(), r_std);
+
+    auto r = sayan::remove(xs, value);
+    std::vector<int> xs_head(xs.begin(), r.begin());
+
+    CHECK(xs_head == xs_std_head);
+
+    CHECK(r.traversed_begin() == xs.begin());
+    CHECK(std::distance(xs.begin(), r.begin()) == std::distance(xs_std.begin(), r_std));
+    CHECK(r.end() == xs.end());
+}
+
+TEST_CASE("algorithm/remove_if")
+{
+    std::forward_list<int> xs_std{1, 2, -1, 3, -2, 0, - 5, 5, 6};
+    auto xs = xs_std;
+
+    auto const pred = [](auto x) { return x < 0; };
+
+    auto r_std = std::remove_if(xs_std.begin(), xs_std.end(), pred);
+    std::vector<int> xs_std_head(xs_std.begin(), r_std);
+
+    auto r = sayan::remove_if(xs, pred);
+
+    std::vector<int> xs_head(xs.begin(), r.begin());
+
+    CHECK(xs_head == xs_std_head);
+
+    CHECK(r.traversed_begin() == xs.begin());
+    CHECK(std::distance(xs.begin(), r.begin()) == std::distance(xs_std.begin(), r_std));
+    CHECK(r.end() == xs.end());
+}
+
+TEST_CASE("algorithm/remove_if: nothing to remove")
+{
+    std::forward_list<int> xs{1, 2, 3, 0, 5, 5, 6};
+    auto const xs_old = xs;
+
+    auto const pred = [](auto x) { return x < 0; };
+
+    CHECK(::sayan::none_of(xs, pred));
+
+    auto r = sayan::remove_if(xs, pred);
+
+    CHECK(xs == xs_old);
+
+    CHECK(r.traversed_begin() == xs.begin());
+    CHECK(r.begin() == xs.end());
+    CHECK(r.end() == xs.end());
 }
 
 TEST_CASE("algorithm/remove_copy")
@@ -592,9 +672,11 @@ TEST_CASE("algorithm/copy_if: to shorter")
     auto const stop = std::get<0>(result).begin();
     auto const n_removed = (stop - src.begin()) - std::count_if(src.begin(), stop, pred);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(stop == src.begin() + dest.size() + n_removed);
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -617,11 +699,51 @@ TEST_CASE("algorithm/copy_if: to longer")
     CHECK(dest.substr(0, r_std.size()) == r_std);
     CHECK(dest.substr(r_std.size()) == dest_old.substr(r_std.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + r_std.size());
     CHECK(std::get<1>(result).end() == dest.end());
+}
+
+TEST_CASE("algorithm/replace")
+{
+    std::forward_list<int> xs_std{1,2,3,2,5,2};
+    auto xs = xs_std;
+
+    auto const old_value = int{2};
+    auto const new_value = int{22};
+
+    std::replace(xs_std.begin(), xs_std.end(), old_value, new_value);
+
+    auto const result = sayan::replace(xs, old_value, new_value);
+
+    CHECK(xs == xs_std);
+
+    CHECK(result.traversed_begin() == xs.begin());
+    CHECK(result.begin() == xs.end());
+    CHECK(result.end() == xs.end());
+}
+
+TEST_CASE("algorithm/replace_if")
+{
+    std::forward_list<int> xs_std{1,2,3,4,5,6};
+    auto xs = xs_std;
+
+    auto const pred = [](auto const & x) { return x % 2 == 0; };
+    auto const new_value = int{-1};
+
+    std::replace_if(xs_std.begin(), xs_std.end(), pred, new_value);
+
+    auto const result = sayan::replace_if(xs, pred, new_value);
+
+    CHECK(xs == xs_std);
+
+    CHECK(result.traversed_begin() == xs.begin());
+    CHECK(result.begin() == xs.end());
+    CHECK(result.end() == xs.end());
 }
 
 TEST_CASE("algorithm/replace_copy")
@@ -662,9 +784,11 @@ TEST_CASE("algorithm/replace_copy: to longer")
     // Проверки
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -690,9 +814,11 @@ TEST_CASE("algorithm/replace_copy: to shorter")
     // Проверки
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -735,9 +861,11 @@ TEST_CASE("algorithm/replace_copy_if: to longer")
     // Проверки
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -763,11 +891,47 @@ TEST_CASE("algorithm/replace_copy_if: to shorter")
     // Проверки
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
+}
+
+TEST_CASE("algorithm/unique")
+{
+    std::forward_list<int> xs_std{1, 2, 2, 3, 3, 4, 5, 5, 6, 2, 3, 5};
+    auto xs = xs_std;
+
+    auto const r_std = std::unique(xs_std.begin(), xs_std.end());
+    auto const r = sayan::unique(xs);
+
+    std::vector<int> out_std(xs_std.begin(), r_std);
+    std::vector<int> out(xs.begin(), r.begin());
+
+    CHECK(r.traversed_begin() == xs.begin());
+    CHECK(out == out_std);
+    CHECK(r.end() == xs.end());
+}
+
+TEST_CASE("algorithm/unique: custom predicate")
+{
+    std::string const src("common string \t with   repeating  \n\n\n\n  spaces");
+    std::forward_list<char> xs_std(src.begin(), src.end());
+    auto xs = xs_std;
+    auto const pred = [](char x, char y) { return std::isspace(x) && std::isspace(y) && x == y; };
+
+    auto const r_std = std::unique(xs_std.begin(), xs_std.end(), pred);
+    auto const r = sayan::unique(xs, pred);
+
+    std::string out_std(xs_std.begin(), r_std);
+    std::string out(xs.begin(), r.begin());
+
+    CHECK(r.traversed_begin() == xs.begin());
+    CHECK(out == out_std);
+    CHECK(r.end() == xs.end());
 }
 
 TEST_CASE("algorithm/unique_copy")
@@ -807,9 +971,11 @@ TEST_CASE("algorithm/unique_copy: to longer")
 
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + (stop_std - dest_std.begin()));
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -843,9 +1009,11 @@ TEST_CASE("algorithm/unique_copy: to shorter")
     // Проверки
     CHECK(dest == dest_std.substr(0, dest.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK((std::get<0>(result).begin() - src.begin()) == dest.size() + to_erase);
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -881,9 +1049,11 @@ TEST_CASE("algorithm/unique_copy: custom predicate, to longer")
 
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + (stop_std - dest_std.begin()));
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -915,780 +1085,218 @@ TEST_CASE("algorithm/unique_copy: custom predicate, to shorter")
     // Проверки
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK((std::get<0>(result).begin() - src.begin()) == dest_std.size() + to_erase);
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
 
-TEST_CASE("algorithm/partition_copy")
+TEST_CASE("algorithm/swap_ranges")
 {
-    std::string const src{"standard algorithms are great"};
+    std::forward_list<int> xs1{1,3,5,7};
+    std::forward_list<int> xs2{2,4,6,8};
 
-    auto const pred = [](char c) { return c % 2; };
+    auto const xs1_old = xs1;
+    auto const xs2_old = xs2;
 
-    // std
-    std::string out_true_std;
-    std::string out_false_std;
+    auto const r = sayan::swap_ranges(xs1, xs2);
 
-    std::partition_copy(src.begin(), src.end(),
-                        std::back_inserter(out_true_std),
-                        std::back_inserter(out_false_std), pred);
+    CHECK(std::get<0>(r).traversed_begin() == xs1.begin());
+    CHECK(std::get<0>(r).begin() == xs1.end());
+    CHECK(std::get<0>(r).end() == xs1.end());
 
-    // sayan
-    std::ostringstream os_true;
-    std::ostringstream os_false;
+    CHECK(std::get<1>(r).traversed_begin() == xs2.begin());
+    CHECK(std::get<1>(r).begin() == xs2.end());
+    CHECK(std::get<1>(r).end() == xs2.end());
 
-    sayan::partition_copy(std::istringstream(src), os_true, os_false, pred);
-
-    CHECK(os_true.str() == out_true_std);
-    CHECK(os_false.str() == out_false_std);
+    CHECK(xs1 == xs2_old);
+    CHECK(xs2 == xs1_old);
 }
 
-TEST_CASE("algorithm/partition_copy: to longer")
+TEST_CASE("algorithm/swap_ranges: different sizes")
 {
-    std::string const src{"standard algorithms are great"};
+    std::vector<int> xs1{1,3,5,7,9};
+    std::vector<int> xs2{2,4,6,8};
 
-    auto const pred = [](char c) { return c % 2; };
+    auto const xs1_old = xs1;
+    auto const xs2_old = xs2;
 
-    // std
-    std::string out_true_std(src.size() + 2, '*');
-    std::string out_false_std(src.size() + 2, '*');
+    auto const n = std::min(xs1.size(), xs2.size());
 
-    auto const result_std = std::partition_copy(src.begin(), src.end(),
-                                                out_true_std.begin(), out_false_std.begin(), pred);
+    auto const r = sayan::swap_ranges(xs1, xs2);
 
-    // sayan
-    std::string out_true(src.size() + 2, '*');
-    std::string out_false(src.size() + 2, '*');
+    CHECK(std::get<0>(r).traversed_begin() == xs1.begin());
+    CHECK(std::get<0>(r).begin() == xs1.begin() + n);
+    CHECK(std::get<0>(r).end() == xs1.end());
 
-    auto const result = sayan::partition_copy(src, out_true, out_false, pred);
+    CHECK(std::get<1>(r).traversed_begin() == xs2.begin());
+    CHECK(std::get<1>(r).begin() == xs2.begin() + n);
+    CHECK(std::get<1>(r).end() == xs2.end());
 
-    CHECK(out_true == out_true_std);
-    CHECK(out_false == out_false_std);
+    CHECK(::std::equal(xs1.begin(), xs1.begin() + n, xs2_old.begin(), xs2_old.begin() + n));
+    CHECK(::std::equal(xs2.begin(), xs2.begin() + n, xs1_old.begin(), xs1_old.begin() + n));
+    CHECK(::std::equal(xs1.begin() + n, xs1.end(), xs1_old.begin() + n, xs1_old.end()));
+    CHECK(::std::equal(xs2.begin() + n, xs2.end(), xs2_old.begin() + n, xs2_old.end()));
 
-    CHECK(std::get<0>(result).begin() == src.end());
-    CHECK(std::get<0>(result).end() == src.end());
+    sayan::swap_ranges(xs2, xs1);
 
-    CHECK(std::get<1>(result).begin() == out_true.begin() + (result_std.first - out_true_std.begin()));
-    CHECK(std::get<1>(result).end() == out_true.end());
-
-    CHECK(std::get<2>(result).begin() == out_false.begin() + (result_std.second - out_false_std.begin()));
-    CHECK(std::get<2>(result).end() == out_false.end());
+    CHECK(xs1 == xs1_old);
+    CHECK(xs2 == xs2_old);
 }
 
-TEST_CASE("algorithm/partition_copy: stops by out_true")
+TEST_CASE("algorithm/rotate: empty parts")
 {
-    std::string const src{"standard algorithms are great"};
-    auto const pred = [](char c) { return c % 2; };
+    std::forward_list<int> xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto const xs_old = xs;
 
-    auto const n_true = sayan::count_if(src, pred);
+    auto const cur = ::sayan::cursor(xs);
 
-    // sayan
-    std::string out_true(n_true / 2, '*');
-    std::string out_false(src.size() - n_true + 2, '*');
+    auto const r1 = sayan::rotate(cur);
 
-    auto const result = sayan::partition_copy(src, out_true, out_false, pred);
-    auto n_taken = std::get<0>(result).begin() - src.begin();
+    CHECK(xs == xs_old);
+    CHECK(r1.begin() == xs.end());
+
+    auto c = cur;
+    c.exhaust(sayan::front);
+
+    auto const r2 = sayan::rotate(c);
+
+    CHECK(xs == xs_old);
+    CHECK(r2.begin() == xs.begin());
+}
+
+TEST_CASE("algorithm/rotate: equal parts")
+{
+    std::vector<int> xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    auto xs_sayan = xs;
+
+    auto const n = std::distance(xs.begin(), xs.end());
+    auto const d = n / 2;
+    CHECK(d == n - d);
 
     // std
-    std::string out_true_std(out_true.size(), '*');
-    std::string out_false_std(out_false.size(), '*');
+    auto const r_std = std::rotate(xs.begin(), std::next(xs.begin(), d), xs.end());
 
-    auto const result_std = std::partition_copy(src.begin(), src.begin() + n_taken,
-                                                out_true_std.begin(), out_false_std.begin(), pred);
+    // sayan
+    auto const r = ::sayan::rotate(::sayan::next(::sayan::cursor(xs_sayan), d));
 
     // Проверки
-    CHECK((out_true.size() <= src.size() && out_true.size() <= out_false.size()));
+    CHECK(xs_sayan == xs);
 
-    CHECK(out_true == out_true_std);
-    CHECK(out_false == out_false_std);
-
-    auto const n_out_true = (result_std.first - out_true_std.begin());
-    auto const n_out_false = (result_std.second - out_false_std.begin());
-
-    CHECK(std::get<0>(result).begin() == src.begin() + n_out_true + n_out_false);
-    CHECK(std::get<0>(result).end() == src.end());
-    CHECK(std::get<1>(result).begin() == out_true.begin() + n_out_true);
-    CHECK(std::get<1>(result).end() == out_true.end());
-    CHECK(std::get<2>(result).begin() == out_false.begin() + n_out_false);
-    CHECK(std::get<2>(result).end() == out_false.end());
+    CHECK((r.traversed(sayan::front).begin() - xs_sayan.begin()) == 0);
+    CHECK((r.begin() - xs_sayan.begin()) == (r_std - xs.begin()));
+    CHECK((xs_sayan.end() - r.end()) == 0);
 }
 
-TEST_CASE("algorithm/partition_copy: stops by out_false")
+TEST_CASE("algorithm/rotate: first shorter")
 {
-    std::string const src{"standard algorithms are great"};
-    auto const pred = [](char c) { return c % 2; };
+    // Настройки
+    std::vector<int> xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto xs_sayan = xs;
 
-    auto const n_true = sayan::count_if(src, pred);
-
-    // sayan
-    std::string out_true(n_true, '*');
-    std::string out_false((src.size() - n_true) / 2, '*');
-
-    auto const result = sayan::partition_copy(src, out_true, out_false, pred);
-    auto n_taken = std::get<0>(result).begin() - src.begin();
+    auto const n = std::distance(xs.begin(), xs.end());
+    auto const d = n / 3;
 
     // std
-    std::string out_true_std(out_true.size(), '*');
-    std::string out_false_std(out_false.size(), '*');
+    auto const r_std = std::rotate(xs.begin(), std::next(xs.begin(), d), xs.end());
 
-    auto const result_std = std::partition_copy(src.begin(), src.begin() + n_taken,
-                                                out_true_std.begin(), out_false_std.begin(), pred);
+    // sayan
+    auto cur = ::sayan::cursor(xs_sayan);
+    ::sayan::advance(cur, d);
+
+    auto const r = ::sayan::rotate(cur);
 
     // Проверки
-    CHECK((out_false.size() <= src.size() && out_false.size() <= out_true.size()));
+    CHECK(xs_sayan == xs);
 
-    CHECK(out_true == out_true_std);
-    CHECK(out_false == out_false_std);
-
-    auto const n_out_true = (result_std.first - out_true_std.begin());
-    auto const n_out_false = (result_std.second - out_false_std.begin());
-
-    CHECK(std::get<0>(result).begin() == src.begin() + n_out_true + n_out_false);
-    CHECK(std::get<0>(result).end() == src.end());
-    CHECK(std::get<1>(result).begin() == out_true.begin() + n_out_true);
-    CHECK(std::get<1>(result).end() == out_true.end());
-    CHECK(std::get<2>(result).begin() == out_false.begin() + n_out_false);
-    CHECK(std::get<2>(result).end() == out_false.end());
+    CHECK((r.traversed(sayan::front).begin() - xs_sayan.begin()) == 0);
+    CHECK((r.begin() - xs_sayan.begin()) == (r_std - xs.begin()));
+    CHECK((xs_sayan.end() - r.end()) == 0);
 }
 
-TEST_CASE("algorithm/merge")
+TEST_CASE("algorithm/rotate: first longer")
 {
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
+    // Настройки
+    std::vector<int> xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto xs_sayan = xs;
 
-    std::sort(src_1.begin(), src_1.end());
-    std::sort(src_2.begin(), src_2.end());
+    auto const n = std::distance(xs.begin(), xs.end());
+    auto const d = n - n / 3;
 
-    std::string out_std;
-    std::merge(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std));
+    // std
+    auto const r_std = std::rotate(xs.begin(), std::next(xs.begin(), d), xs.end());
 
-    std::ostringstream os;
-    sayan::merge(std::istringstream(src_1), std::istringstream(src_2), os);
+    // sayan
+    auto cur = ::sayan::cursor(xs_sayan);
+    ::sayan::advance(cur, d);
 
-    CHECK(os.str() == out_std);
+    auto const r = ::sayan::rotate(cur);
+
+    // Проверки
+    CHECK(xs_sayan == xs);
+
+    CHECK((r.traversed(sayan::front).begin() - xs_sayan.begin()) == 0);
+    CHECK((r.begin() - xs_sayan.begin()) == (r_std - xs.begin()));
+    CHECK((xs_sayan.end() - r.end()) == 0);
 }
 
-TEST_CASE("algorithm/merge: custom predicate")
+TEST_CASE("algorithm/rotate_copy")
 {
-    auto const pred = std::greater<>{};
+    // Настройки
+    std::forward_list<int> const xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto const n = std::distance(xs.begin(), xs.end());
+    auto const d = n / 3;
 
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
+    // std
+    std::vector<int> out_std;
+    std::rotate_copy(xs.begin(), std::next(xs.begin(), d), xs.end(),
+                     std::back_inserter(out_std));
 
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
+    // sayan
+    auto cur = ::sayan::cursor(xs);
+    ::sayan::advance(cur, d);
 
-    std::string out_std;
-    std::merge(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std), pred);
+    std::vector<int> out_sayan;
+    auto const r = ::sayan::rotate_copy(cur, sayan::back_inserter(out_sayan)).first;
 
-    std::ostringstream os;
-    sayan::merge(std::istringstream(src_1), std::istringstream(src_2), os, pred);
+    // Проверки
+    CHECK(out_sayan == out_std);
 
-    CHECK(os.str() == out_std);
+    CHECK(r.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r.begin() == xs.end());
+    CHECK(r.end() == xs.end());
 }
 
-TEST_CASE("algorithm/merge: custom predicate, first input is shorter, enough space")
+TEST_CASE("algorithm/rotate_copy: to longer")
 {
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std(src_1.size() + src_2.size() + 10, '*');
-    auto out = out_std;
-
-    auto const r_std = std::merge(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-                                  out_std.begin(), pred);
-
-    auto const r = sayan::merge(src_1, src_2, out, pred);
-
-    CHECK(out == out_std);
-
-    CHECK(std::get<0>(r).begin() == src_1.end());
-    CHECK(std::get<0>(r).end() == src_1.end());
-
-    CHECK(std::get<1>(r).begin() == src_2.end());
-    CHECK(std::get<1>(r).end() == src_2.end());
-
-    CHECK((std::get<2>(r).begin() - out.begin()) == r_std - out_std.begin());
-    CHECK(std::get<2>(r).end() == out.end());
-}
-
-TEST_CASE("algorithm/merge: custom predicate, second input is shorter, enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"12358"};
-    std::string src_2{"1248"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std(src_1.size() + src_2.size() + 10, '*');
-    auto out = out_std;
-
-    auto const r_std = std::merge(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-                                  out_std.begin(), pred);
-
-    auto const r = sayan::merge(src_1, src_2, out, pred);
-
-    CHECK(out == out_std);
-
-    CHECK(std::get<0>(r).begin() == src_1.end());
-    CHECK(std::get<0>(r).end() == src_1.end());
-
-    CHECK(std::get<1>(r).begin() == src_2.end());
-    CHECK(std::get<1>(r).end() == src_2.end());
-
-    CHECK((std::get<2>(r).begin() - out.begin()) == r_std - out_std.begin());
-    CHECK(std::get<2>(r).end() == out.end());
-}
-
-TEST_CASE("algorithm/merge: custom predicate, not enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"12358"};
-    std::string src_2{"1248"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std;
-    std::merge(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std), pred);
-
-    std::string out(out_std.size() / 2, '*');
-    auto const r = sayan::merge(src_1, src_2, out, pred);
-
-    CHECK(out == out_std.substr(0, out.size()));
-
-    CHECK(std::get<2>(r).begin() == out.end());
-    CHECK(std::get<2>(r).end() == out.end());
-
-    std::string out_2;
-    std::merge(src_1.begin(), std::get<0>(r).begin(), src_2.begin(), std::get<1>(r).begin(),
-               std::back_inserter(out_2), pred);
-
-    CHECK(out == out_2);
-}
-
-TEST_CASE("algorithm/set_union")
-{
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end());
-    std::sort(src_2.begin(), src_2.end());
-
-    std::string out_std;
-    std::set_union(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std));
-
-    std::ostringstream os;
-    sayan::set_union(std::istringstream(src_1), std::istringstream(src_2), os);
-
-    CHECK(os.str() == out_std);
-}
-
-TEST_CASE("algorithm/set_union: custom predicate")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std;
-    std::set_union(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std), pred);
-
-    std::ostringstream os;
-    sayan::set_union(std::istringstream(src_1), std::istringstream(src_2), os, pred);
-
-    CHECK(os.str() == out_std);
-}
-
-TEST_CASE("algorithm/set_union: custom predicate, first input is shorter, enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std(src_1.size() + src_2.size() + 10, '*');
-    auto out = out_std;
-
-    auto const r_std = std::set_union(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-                                  out_std.begin(), pred);
-
-    auto const r = sayan::set_union(src_1, src_2, out, pred);
-
-    CHECK(out == out_std);
-
-    CHECK(std::get<0>(r).begin() == src_1.end());
-    CHECK(std::get<0>(r).end() == src_1.end());
-
-    CHECK(std::get<1>(r).begin() == src_2.end());
-    CHECK(std::get<1>(r).end() == src_2.end());
-
-    CHECK((std::get<2>(r).begin() - out.begin()) == r_std - out_std.begin());
-    CHECK(std::get<2>(r).end() == out.end());
-}
-
-TEST_CASE("algorithm/set_union: custom predicate, second input is shorter, enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"12358"};
-    std::string src_2{"1248"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std(src_1.size() + src_2.size() + 10, '*');
-    auto out = out_std;
-
-    auto const r_std = std::set_union(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-                                  out_std.begin(), pred);
-
-    auto const r = sayan::set_union(src_1, src_2, out, pred);
-
-    CHECK(out == out_std);
-
-    CHECK(std::get<0>(r).begin() == src_1.end());
-    CHECK(std::get<0>(r).end() == src_1.end());
-
-    CHECK(std::get<1>(r).begin() == src_2.end());
-    CHECK(std::get<1>(r).end() == src_2.end());
-
-    CHECK((std::get<2>(r).begin() - out.begin()) == r_std - out_std.begin());
-    CHECK(std::get<2>(r).end() == out.end());
-}
-
-TEST_CASE("algorithm/set_union: custom predicate, not enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"12358"};
-    std::string src_2{"1248"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std;
-    std::set_union(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std), pred);
-
-    std::string out(out_std.size() / 2, '*');
-    auto const r = sayan::set_union(src_1, src_2, out, pred);
-
-    CHECK(out == out_std.substr(0, out.size()));
-
-    CHECK(std::get<2>(r).begin() == out.end());
-    CHECK(std::get<2>(r).end() == out.end());
-
-    std::string out_2;
-    std::set_union(src_1.begin(), std::get<0>(r).begin(), src_2.begin(), std::get<1>(r).begin(),
-               std::back_inserter(out_2), pred);
-
-    CHECK(out == out_2);
-}
-
-TEST_CASE("algorithm/set_intersection")
-{
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end());
-    std::sort(src_2.begin(), src_2.end());
-
-    std::string out_std;
-    std::set_intersection(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std));
-
-    std::ostringstream os;
-    sayan::set_intersection(std::istringstream(src_1), std::istringstream(src_2), os);
-
-    CHECK(os.str() == out_std);
-}
-
-TEST_CASE("algorithm/set_intersection: custom predicate")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std;
-    std::set_intersection(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std), pred);
-
-    std::ostringstream os;
-    sayan::set_intersection(std::istringstream(src_1), std::istringstream(src_2), os, pred);
-
-    CHECK(os.str() == out_std);
-}
-
-TEST_CASE("algorithm/set_intersection: custom predicate, first input is shorter, enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std(src_1.size() + src_2.size() + 10, '*');
-    auto out = out_std;
-
-    auto const r_std = std::set_intersection(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-                                             out_std.begin(), pred);
-
-    auto const r = sayan::set_intersection(src_1, src_2, out, pred);
-
-    CHECK(out == out_std);
-
-    CHECK(std::get<0>(r).begin() == src_1.end());
-    CHECK(std::get<0>(r).end() == src_1.end());
-
-    CHECK(std::get<1>(r).begin() == src_2.end());
-    CHECK(std::get<1>(r).end() == src_2.end());
-
-    CHECK((std::get<2>(r).begin() - out.begin()) == r_std - out_std.begin());
-    CHECK(std::get<2>(r).end() == out.end());
-}
-
-TEST_CASE("algorithm/set_intersection: custom predicate, second input is shorter, enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"12358"};
-    std::string src_2{"1248"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std(src_1.size() + src_2.size() + 10, '*');
-    auto out = out_std;
-
-    auto const r_std = std::set_intersection(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-                                  out_std.begin(), pred);
-
-    auto const r = sayan::set_intersection(src_1, src_2, out, pred);
-
-    CHECK(out == out_std);
-
-    CHECK(std::get<0>(r).begin() == src_1.end());
-    CHECK(std::get<0>(r).end() == src_1.end());
-
-    CHECK(std::get<1>(r).begin() == src_2.end());
-    CHECK(std::get<1>(r).end() == src_2.end());
-
-    CHECK((std::get<2>(r).begin() - out.begin()) == r_std - out_std.begin());
-    CHECK(std::get<2>(r).end() == out.end());
-}
-
-TEST_CASE("algorithm/set_intersection: custom predicate, not enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"12358"};
-    std::string src_2{"1248"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std;
-    std::set_intersection(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std), pred);
-
-    std::string out(out_std.size() / 2, '*');
-    auto const r = sayan::set_intersection(src_1, src_2, out, pred);
-
-    CHECK(out == out_std.substr(0, out.size()));
-
-    CHECK(std::get<2>(r).begin() == out.end());
-    CHECK(std::get<2>(r).end() == out.end());
-
-    std::string out_2;
-    std::set_intersection(src_1.begin(), std::get<0>(r).begin(),
-                          src_2.begin(), std::get<1>(r).begin(),
-                          std::back_inserter(out_2), pred);
-
-    CHECK(out == out_2);
-}
-
-TEST_CASE("algorithm/set_difference")
-{
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end());
-    std::sort(src_2.begin(), src_2.end());
-
-    std::string out_std;
-    std::set_difference(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std));
-
-    std::ostringstream os;
-    sayan::set_difference(std::istringstream(src_1), std::istringstream(src_2), os);
-
-    CHECK(os.str() == out_std);
-}
-
-TEST_CASE("algorithm/set_difference: custom predicate")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std;
-    std::set_difference(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std), pred);
-
-    std::ostringstream os;
-    sayan::set_difference(std::istringstream(src_1), std::istringstream(src_2), os, pred);
-
-    CHECK(os.str() == out_std);
-}
-
-TEST_CASE("algorithm/set_difference: custom predicate, first input is shorter, enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std(src_1.size() + src_2.size() + 10, '*');
-    auto out = out_std;
-
-    auto const r_std = std::set_difference(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-                                             out_std.begin(), pred);
-
-    auto const r = sayan::set_difference(src_1, src_2, out, pred);
-
-    CHECK(out == out_std);
-
-    CHECK(std::get<0>(r).begin() == src_1.end());
-    CHECK(std::get<0>(r).end() == src_1.end());
-
-    CHECK(std::get<1>(r).begin() == src_2.end());
-    CHECK(std::get<1>(r).end() == src_2.end());
-
-    CHECK((std::get<2>(r).begin() - out.begin()) == r_std - out_std.begin());
-    CHECK(std::get<2>(r).end() == out.end());
-}
-
-TEST_CASE("algorithm/set_difference: custom predicate, second input is shorter, enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"12358"};
-    std::string src_2{"1248"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std(src_1.size() + src_2.size() + 10, '*');
-    auto out = out_std;
-
-    auto const r_std = std::set_difference(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-                                  out_std.begin(), pred);
-
-    auto const r = sayan::set_difference(src_1, src_2, out, pred);
-
-    CHECK(out == out_std);
-
-    CHECK(std::get<0>(r).begin() == src_1.end());
-    CHECK(std::get<0>(r).end() == src_1.end());
-
-    CHECK(std::get<1>(r).begin() == src_2.end());
-    CHECK(std::get<1>(r).end() == src_2.end());
-
-    CHECK((std::get<2>(r).begin() - out.begin()) == r_std - out_std.begin());
-    CHECK(std::get<2>(r).end() == out.end());
-}
-
-TEST_CASE("algorithm/set_difference: custom predicate, not enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"12358"};
-    std::string src_2{"1248"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std;
-    std::set_difference(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std), pred);
-
-    std::string out(out_std.size() / 2, '*');
-    auto const r = sayan::set_difference(src_1, src_2, out, pred);
-
-    CHECK(out == out_std.substr(0, out.size()));
-
-    CHECK(std::get<2>(r).begin() == out.end());
-    CHECK(std::get<2>(r).end() == out.end());
-
-    std::string out_2;
-    std::set_difference(src_1.begin(), std::get<0>(r).begin(),
-                        src_2.begin(), std::get<1>(r).begin(),
-                        std::back_inserter(out_2), pred);
-
-    CHECK(out == out_2);
-}
-
-TEST_CASE("algorithm/set_symmetric_difference")
-{
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end());
-    std::sort(src_2.begin(), src_2.end());
-
-    std::string out_std;
-    std::set_symmetric_difference(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-                                  std::back_inserter(out_std));
-
-    std::ostringstream os;
-    sayan::set_symmetric_difference(std::istringstream(src_1), std::istringstream(src_2), os);
-
-    CHECK(os.str() == out_std);
-}
-
-TEST_CASE("algorithm/set_symmetric_difference: custom predicate")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std;
-    std::set_symmetric_difference(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std), pred);
-
-    std::ostringstream os;
-    sayan::set_symmetric_difference(std::istringstream(src_1), std::istringstream(src_2), os, pred);
-
-    CHECK(os.str() == out_std);
-}
-
-TEST_CASE("algorithm/set_symmetric_difference: custom predicate, first input is shorter, enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"1248"};
-    std::string src_2{"12358"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std(src_1.size() + src_2.size() + 10, '*');
-    auto out = out_std;
-
-    auto const r_std = std::set_symmetric_difference(src_1.begin(), src_1.end(),
-                                                     src_2.begin(), src_2.end(),
-                                                     out_std.begin(), pred);
-
-    auto const r = sayan::set_symmetric_difference(src_1, src_2, out, pred);
-
-    CHECK(out == out_std);
-
-    CHECK(std::get<0>(r).begin() == src_1.end());
-    CHECK(std::get<0>(r).end() == src_1.end());
-
-    CHECK(std::get<1>(r).begin() == src_2.end());
-    CHECK(std::get<1>(r).end() == src_2.end());
-
-    CHECK((std::get<2>(r).begin() - out.begin()) == r_std - out_std.begin());
-    CHECK(std::get<2>(r).end() == out.end());
-}
-
-TEST_CASE("algorithm/set_symmetric_difference: custom predicate, second input is shorter, enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"12358"};
-    std::string src_2{"1248"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std(src_1.size() + src_2.size() + 10, '*');
-    auto out = out_std;
-
-    auto const r_std = std::set_symmetric_difference(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-                                  out_std.begin(), pred);
-
-    auto const r = sayan::set_symmetric_difference(src_1, src_2, out, pred);
-
-    CHECK(out == out_std);
-
-    CHECK(std::get<0>(r).begin() == src_1.end());
-    CHECK(std::get<0>(r).end() == src_1.end());
-
-    CHECK(std::get<1>(r).begin() == src_2.end());
-    CHECK(std::get<1>(r).end() == src_2.end());
-
-    CHECK((std::get<2>(r).begin() - out.begin()) == r_std - out_std.begin());
-    CHECK(std::get<2>(r).end() == out.end());
-}
-
-TEST_CASE("algorithm/set_symmetric_difference: custom predicate, not enough space")
-{
-    auto const pred = std::greater<>{};
-
-    std::string src_1{"12358"};
-    std::string src_2{"1248"};
-
-    std::sort(src_1.begin(), src_1.end(), pred);
-    std::sort(src_2.begin(), src_2.end(), pred);
-
-    std::string out_std;
-    std::set_symmetric_difference(src_1.begin(), src_1.end(), src_2.begin(), src_2.end(),
-               std::back_inserter(out_std), pred);
-
-    std::string out(out_std.size() / 2, '*');
-    auto const r = sayan::set_symmetric_difference(src_1, src_2, out, pred);
-
-    CHECK(out == out_std.substr(0, out.size()));
-
-    CHECK(std::get<2>(r).begin() == out.end());
-    CHECK(std::get<2>(r).end() == out.end());
-
-    std::string out_2;
-    std::set_symmetric_difference(src_1.begin(), std::get<0>(r).begin(),
-                        src_2.begin(), std::get<1>(r).begin(),
-                        std::back_inserter(out_2), pred);
-
-    CHECK(out == out_2);
+    // Настройки
+    std::forward_list<int> const xs{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto const n = std::distance(xs.begin(), xs.end());
+    auto const d = n / 3;
+
+    std::vector<int> dest_std(2*n, -1);
+    auto dest_sayan = dest_std;
+
+    // std
+    auto const r_std = std::rotate_copy(xs.begin(), std::next(xs.begin(), d), xs.end(),
+                                        dest_std.begin());
+
+    // sayan
+    auto cur = ::sayan::cursor(xs);
+    ::sayan::advance(cur, d);
+    auto const r = ::sayan::rotate_copy(cur, dest_sayan);
+
+    // Проверки
+    CHECK(dest_sayan == dest_std);
+
+    CHECK(r.first.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r.first.begin() == xs.end());
+    CHECK(r.first.end() == xs.end());
+
+    CHECK(r.second.traversed(sayan::front).begin() == dest_sayan.begin());
+    CHECK((r.second.begin() - dest_sayan.begin()) == (r_std - dest_std.begin()));
+    CHECK(r.second.end() == dest_sayan.end());
 }

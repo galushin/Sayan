@@ -46,9 +46,15 @@
 		<Unit filename="../include/sayan/cursor/sequence_to_cursor.hpp" />
 		<Unit filename="../include/sayan/numeric.hpp" />
 		<Unit filename="../include/sayan/utility/static_const.hpp" />
+		<Unit filename="../include/sayan/utility/with_old_value.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="tests/algorithm/minmax.cpp" />
 		<Unit filename="tests/algorithm/modifying.cpp" />
 		<Unit filename="tests/algorithm/nonmodifying.cpp" />
+		<Unit filename="tests/algorithm/partitioning.cpp" />
+		<Unit filename="tests/algorithm/permutations.cpp" />
+		<Unit filename="tests/algorithm/set_operations.cpp" />
+		<Unit filename="tests/algorithm/sorting.cpp" />
 		<Unit filename="tests/cursor/inserters.cpp" />
 		<Unit filename="tests/cursor/istream.cpp" />
 		<Unit filename="tests/cursor/ostream.cpp" />
