@@ -47,10 +47,12 @@ TEST_CASE("algorithm/copy: to shorter")
 
     CHECK(src.substr(0, dest.size()) == dest);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
     CHECK(std::get<0>(result).end() == src.end());
 
     CHECK(std::get<1>(result).empty());
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -69,9 +71,11 @@ TEST_CASE("algorithm/copy: to longer")
     CHECK(dest.substr(0, src.size()) == src);
     CHECK(dest.substr(src.size()) == dest_old.substr(src.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -136,9 +140,11 @@ TEST_CASE("cursors/move: to longer")
 
     CHECK(dest_ns == ns);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -177,9 +183,11 @@ TEST_CASE("cursors/move: to shorter")
 
     CHECK(dest_ns == std::vector<int>(ns.begin(), ns.begin() + dest.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -215,10 +223,12 @@ TEST_CASE("algorithm/transform: to shorter")
 
     CHECK(dest == r_std.substr(0, dest.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
     CHECK(std::get<0>(result).end() == src.end());
 
     CHECK(std::get<1>(result).empty());
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -241,9 +251,11 @@ TEST_CASE("algorithm/transform: to longer")
     CHECK(dest.substr(0, src.size()) == r_std);
     CHECK(dest.substr(src.size()) == dest_old.substr(src.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -295,12 +307,15 @@ TEST_CASE("algorithm/transform2: in1 shorter")
     CHECK(std::equal(out.begin() + n, out.end(),
                      out_old.begin() + n, out_old.end()));
 
+    CHECK(std::get<0>(result).traversed_begin() == in1.begin());
     CHECK(std::get<0>(result).begin() == in1.end());
     CHECK(std::get<0>(result).end() == in1.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == in2.begin());
     CHECK(std::get<1>(result).begin() == in2.begin() + n);
     CHECK(std::get<1>(result).end() == in2.end());
 
+    CHECK(std::get<2>(result).traversed_begin() == out.begin());
     CHECK(std::get<2>(result).begin() == out.begin() + n);
     CHECK(std::get<2>(result).end() == out.end());
 }
@@ -332,12 +347,15 @@ TEST_CASE("algorithm/transform2: in2 shorter")
     CHECK(std::equal(out.begin() + n, out.end(),
                      out_old.begin() + n, out_old.end()));
 
+    CHECK(std::get<0>(result).traversed_begin() == in1.begin());
     CHECK(std::get<0>(result).begin() == in1.begin() + n);
     CHECK(std::get<0>(result).end() == in1.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == in2.begin());
     CHECK(std::get<1>(result).begin() == in2.end());
     CHECK(std::get<1>(result).end() == in2.end());
 
+    CHECK(std::get<2>(result).traversed_begin() == out.begin());
     CHECK(std::get<2>(result).begin() == out.begin() + n);
     CHECK(std::get<2>(result).end() == out.end());
 }
@@ -363,12 +381,15 @@ TEST_CASE("algorithm/transform2: out shorter")
 
     CHECK(out == out_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == in1.begin());
     CHECK(std::get<0>(result).begin() == in1.begin() + n);
     CHECK(std::get<0>(result).end() == in1.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == in2.begin());
     CHECK(std::get<1>(result).begin() == in2.begin() + n);
     CHECK(std::get<1>(result).end() == in2.end());
 
+    CHECK(std::get<2>(result).traversed_begin() == out.begin());
     CHECK(std::get<2>(result).begin() == out.end());
     CHECK(std::get<2>(result).end() == out.end());
 }
@@ -651,9 +672,11 @@ TEST_CASE("algorithm/copy_if: to shorter")
     auto const stop = std::get<0>(result).begin();
     auto const n_removed = (stop - src.begin()) - std::count_if(src.begin(), stop, pred);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(stop == src.begin() + dest.size() + n_removed);
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -676,9 +699,11 @@ TEST_CASE("algorithm/copy_if: to longer")
     CHECK(dest.substr(0, r_std.size()) == r_std);
     CHECK(dest.substr(r_std.size()) == dest_old.substr(r_std.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + r_std.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -759,9 +784,11 @@ TEST_CASE("algorithm/replace_copy: to longer")
     // Проверки
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -787,9 +814,11 @@ TEST_CASE("algorithm/replace_copy: to shorter")
     // Проверки
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -832,9 +861,11 @@ TEST_CASE("algorithm/replace_copy_if: to longer")
     // Проверки
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + src.size());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -860,9 +891,11 @@ TEST_CASE("algorithm/replace_copy_if: to shorter")
     // Проверки
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + dest.size());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -938,9 +971,11 @@ TEST_CASE("algorithm/unique_copy: to longer")
 
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + (stop_std - dest_std.begin()));
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -974,9 +1009,11 @@ TEST_CASE("algorithm/unique_copy: to shorter")
     // Проверки
     CHECK(dest == dest_std.substr(0, dest.size()));
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK((std::get<0>(result).begin() - src.begin()) == dest.size() + to_erase);
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -1012,9 +1049,11 @@ TEST_CASE("algorithm/unique_copy: custom predicate, to longer")
 
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.begin() + (stop_std - dest_std.begin()));
     CHECK(std::get<1>(result).end() == dest.end());
 }
@@ -1046,9 +1085,11 @@ TEST_CASE("algorithm/unique_copy: custom predicate, to shorter")
     // Проверки
     CHECK(dest == dest_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK((std::get<0>(result).begin() - src.begin()) == dest_std.size() + to_erase);
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == dest.begin());
     CHECK(std::get<1>(result).begin() == dest.end());
     CHECK(std::get<1>(result).end() == dest.end());
 }

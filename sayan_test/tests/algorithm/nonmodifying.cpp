@@ -69,6 +69,23 @@ TEST_CASE("algorithms/nonmodifying/for_each: auto-cursor")
     CHECK(cur.empty());
 }
 
+TEST_CASE("algorithms/for_each: on forward")
+{
+    std::string const src{"Alex Stepanov"};
+
+    std::string out;
+
+    std::forward_list<int> const in(src.begin(), src.end());
+    auto cur = sayan::for_each(in, [&out](char c){ out.push_back(c);});
+
+    CHECK(cur.traversed_begin() == in.begin());
+    CHECK(cur.begin() == in.end());
+    CHECK(cur.end() == in.end());
+
+    CHECK(out == src);
+    CHECK(cur.empty());
+}
+
 TEST_CASE("algorithms/nonmodifying/find: success")
 {
     std::string const src{"Alex Stepanov"};
@@ -89,6 +106,19 @@ TEST_CASE("algorithms/nonmodifying/find: success")
     sayan::for_each(r, [&rest](char c){ rest.push_back(c);});
 
     CHECK(rest == std::string(r_std, src.end()));
+}
+
+TEST_CASE("algorithm/find: forward")
+{
+    std::forward_list<int> const xs{1, 2, 4, 5, 6};
+    auto const value = 4;
+
+    auto const r_std = std::find(xs.begin(), xs.end(), value);
+    auto const r = sayan::find(xs, value);
+
+    CHECK(r.traversed_begin() == xs.begin());
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == xs.end());
 }
 
 TEST_CASE("algorithms/nonmodifying/find: success, auto-cursor")
@@ -223,6 +253,32 @@ TEST_CASE("algorithms/nonmodifying/find_if_not: fail, auto-cursor")
     auto const r = sayan::find_if_not(is, pred);
 
     CHECK(r.empty());
+}
+
+TEST_CASE("algorithm/find_if: forward")
+{
+    std::forward_list<int> const xs{1, 2, 4, 5, 6};
+    auto const pred = [](int x) { return x % 2 == 0;};
+
+    auto const r_std = std::find_if(xs.begin(), xs.end(), pred);
+    auto const r = sayan::find_if(xs, pred);
+
+    CHECK(r.traversed_begin() == xs.begin());
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == xs.end());
+}
+
+TEST_CASE("algorithm/find_if_not: forward")
+{
+    std::forward_list<int> const xs{1, 2, 4, 5, 6};
+    auto const pred = [](int x) { return x % 2 == 0;};
+
+    auto const r_std = std::find_if_not(xs.begin(), xs.end(), pred);
+    auto const r = sayan::find_if_not(xs, pred);
+
+    CHECK(r.traversed_begin() == xs.begin());
+    CHECK(r.begin() == r_std);
+    CHECK(r.end() == xs.end());
 }
 
 TEST_CASE("algorithm/find_first_of")
@@ -679,6 +735,23 @@ TEST_CASE("algorithms/nonmodifying/equal: with predicate, auto-cursor")
 
         CHECK(r_std == r_sayan);
     }
+}
+
+TEST_CASE("algorithm/mismatch: forward")
+{
+    std::forward_list<int> const xs1{1, 2, 3, 5, 8};
+    std::forward_list<int> const xs2{1, 2, 3, 4, 5};
+
+    auto const r_std = std::mismatch(xs1.begin(), xs1.end(), xs2.begin(), xs2.end());
+    auto const r = sayan::mismatch(xs1, xs2);
+
+    CHECK(r.first.traversed_begin() == xs1.begin());
+    CHECK(r.first.begin() == r_std.first);
+    CHECK(r.first.end() == xs1.end());
+
+    CHECK(r.second.traversed_begin() == xs2.begin());
+    CHECK(r.second.begin() == r_std.second);
+    CHECK(r.second.end() == xs2.end());
 }
 
 TEST_CASE("algorithms/is_partitioned")

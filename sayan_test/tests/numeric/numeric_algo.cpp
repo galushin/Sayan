@@ -188,9 +188,11 @@ TEST_CASE("numeric/partial_sum: custom operation, to longer")
 
     CHECK(xs == xs_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == xs.begin());
     CHECK(std::get<1>(result).begin() == xs.begin() + (result_std - xs_std.begin()));
     CHECK(std::get<1>(result).end() == xs.end());
 }
@@ -209,9 +211,11 @@ TEST_CASE("numeric/partial_sum: custom operation, to shorter")
 
     CHECK(xs == xs_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + xs.size());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == xs.begin());
     CHECK(std::get<1>(result).begin() == xs.end());
     CHECK(std::get<1>(result).end() == xs.end());
 }
@@ -259,9 +263,11 @@ TEST_CASE("numeric/adjacent_difference: custom operation, to longer")
 
     CHECK(xs == xs_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == xs.begin());
     CHECK(std::get<1>(result).begin() == xs.begin() + (result_std - xs_std.begin()));
     CHECK(std::get<1>(result).end() == xs.end());
 }
@@ -280,9 +286,11 @@ TEST_CASE("numeric/adjacent_difference: custom operation, to shorter")
 
     CHECK(xs == xs_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + xs.size());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == xs.begin());
     CHECK(std::get<1>(result).begin() == xs.end());
     CHECK(std::get<1>(result).end() == xs.end());
 }

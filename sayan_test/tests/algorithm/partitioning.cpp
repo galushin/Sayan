@@ -49,12 +49,15 @@ TEST_CASE("algorithm/partition_copy: to longer")
     CHECK(out_true == out_true_std);
     CHECK(out_false == out_false_std);
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.end());
     CHECK(std::get<0>(result).end() == src.end());
 
+    CHECK(std::get<1>(result).traversed_begin() == out_true.begin());
     CHECK(std::get<1>(result).begin() == out_true.begin() + (result_std.first - out_true_std.begin()));
     CHECK(std::get<1>(result).end() == out_true.end());
 
+    CHECK(std::get<2>(result).traversed_begin() == out_false.begin());
     CHECK(std::get<2>(result).begin() == out_false.begin() + (result_std.second - out_false_std.begin()));
     CHECK(std::get<2>(result).end() == out_false.end());
 }
@@ -89,10 +92,15 @@ TEST_CASE("algorithm/partition_copy: stops by out_true")
     auto const n_out_true = (result_std.first - out_true_std.begin());
     auto const n_out_false = (result_std.second - out_false_std.begin());
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + n_out_true + n_out_false);
     CHECK(std::get<0>(result).end() == src.end());
+
+    CHECK(std::get<1>(result).traversed_begin() == out_true.begin());
     CHECK(std::get<1>(result).begin() == out_true.begin() + n_out_true);
     CHECK(std::get<1>(result).end() == out_true.end());
+
+    CHECK(std::get<2>(result).traversed_begin() == out_false.begin());
     CHECK(std::get<2>(result).begin() == out_false.begin() + n_out_false);
     CHECK(std::get<2>(result).end() == out_false.end());
 }
@@ -127,10 +135,15 @@ TEST_CASE("algorithm/partition_copy: stops by out_false")
     auto const n_out_true = (result_std.first - out_true_std.begin());
     auto const n_out_false = (result_std.second - out_false_std.begin());
 
+    CHECK(std::get<0>(result).traversed_begin() == src.begin());
     CHECK(std::get<0>(result).begin() == src.begin() + n_out_true + n_out_false);
     CHECK(std::get<0>(result).end() == src.end());
+
+    CHECK(std::get<1>(result).traversed_begin() == out_true.begin());
     CHECK(std::get<1>(result).begin() == out_true.begin() + n_out_true);
     CHECK(std::get<1>(result).end() == out_true.end());
+
+    CHECK(std::get<2>(result).traversed_begin() == out_false.begin());
     CHECK(std::get<2>(result).begin() == out_false.begin() + n_out_false);
     CHECK(std::get<2>(result).end() == out_false.end());
 }
@@ -155,6 +168,7 @@ TEST_CASE("algorithm/partition")
     CHECK(std::none_of(r.begin(), r.end(), pred));
     CHECK(sayan::none_of(r, pred));
 
+    CHECK(r.traversed_begin() == xs.begin());
     CHECK(r.end() == xs.end());
 }
 
@@ -172,7 +186,7 @@ TEST_CASE("algorithm/partition_point")
     auto const r_std = std::partition_point(xs.begin(), xs.end(), pred);
     auto const r_sayan = sayan::partition_point(xs, pred);
 
-    CHECK(r_sayan.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r_sayan.traversed_begin() == xs.begin());
     CHECK(r_sayan.begin() == r_std);
     CHECK(r_sayan.end() == xs.end());
 }
@@ -185,7 +199,7 @@ TEST_CASE("algorithm/partition_point: empty sequence")
 
     auto const r_sayan = sayan::partition_point(xs, pred);
 
-    CHECK(r_sayan.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r_sayan.traversed_begin() == xs.begin());
     CHECK(r_sayan.begin() == xs.end());
     CHECK(r_sayan.end() == xs.end());
 }
@@ -200,7 +214,7 @@ TEST_CASE("algorithm/partition_point: all true")
 
     auto const r_sayan = sayan::partition_point(xs, pred);
 
-    CHECK(r_sayan.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r_sayan.traversed_begin() == xs.begin());
     CHECK(r_sayan.begin() == xs.end());
     CHECK(r_sayan.end() == xs.end());
 }
@@ -215,7 +229,7 @@ TEST_CASE("algorithm/partition_point: all false")
 
     auto const r_sayan = sayan::partition_point(xs, pred);
 
-    CHECK(r_sayan.traversed(sayan::front).begin() == xs.begin());
+    CHECK(r_sayan.traversed_begin() == xs.begin());
     CHECK(r_sayan.begin() == xs.begin());
     CHECK(r_sayan.end() == xs.end());
 }
