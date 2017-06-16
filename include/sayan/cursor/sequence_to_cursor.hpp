@@ -13,6 +13,7 @@ namespace sayan
 {
 inline namespace v1
 {
+    // @todo Временно запретить для временных?
     template <class Range, class = std::enable_if_t<!is_cursor<Range>::value>>
     auto cursor_hook(Range && r, adl_tag)
     -> iterator_cursor_type<decltype(std::forward<Range>(r).begin()),
@@ -104,6 +105,13 @@ inline namespace v1
         {
             using std::swap;
             swap(*c1, *c2);
+        }
+
+        template <class Cursor1, class Cursor2, class P1, class P2>
+        void operator()(Cursor1 const & c1, Cursor2 const & c2, P1 p1, P2 p2) const
+        {
+            using std::swap;
+            swap(c1[p1], c2[p2]);
         }
     };
 

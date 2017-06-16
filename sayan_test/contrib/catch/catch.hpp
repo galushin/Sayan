@@ -11506,6 +11506,7 @@ using Catch::Detail::Approx;
 
 // Добавлено П.В. Галушиным 12.06.2017
 #include <forward_list>
+#include <list>
 
 namespace Catch
 {
@@ -11514,18 +11515,16 @@ namespace Catch
     {
         static std::string convert(std::forward_list<T> const & xs)
         {
-            std::ostringstream oss;
-            auto first = xs.begin();
-            auto const last = xs.end();
+            return Catch::Detail::rangeToString(xs.begin(), xs.end());
+        }
+    };
 
-            oss << "{ ";
-            if( first != last ) {
-                oss << Catch::toString( *first );
-                for( ++first ; first != last ; ++first )
-                    oss << ", " << Catch::toString( *first );
-            }
-            oss << " }";
-            return oss.str();
+    template <class T>
+    struct StringMaker<std::list<T>>
+    {
+        static std::string convert(std::list<T> const & xs)
+        {
+            return Catch::Detail::rangeToString(xs.begin(), xs.end());
         }
     };
 }

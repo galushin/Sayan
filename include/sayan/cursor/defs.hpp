@@ -12,10 +12,12 @@ namespace sayan
 inline namespace v1
 {
     struct front_fn {};
+    struct back_fn {};
 
     namespace
     {
         constexpr auto const & front = static_const<front_fn>;
+        constexpr auto const & back = static_const<back_fn>;
     }
 
     /// @cond false

@@ -3,6 +3,7 @@
 
 #include <sayan/cursor/defs.hpp>
 #include <sayan/cursor/sequence_to_cursor.hpp>
+#include <sayan/cursor/reverse.hpp>
 
 #include <cassert>
 #include <functional>
@@ -540,6 +541,32 @@ inline namespace v1
         }
     };
 
+    struct copy_backward_fn
+    {
+        template <class BidirectionalSequence1, class BidirectionalSequence2>
+        std::pair<safe_cursor_type_t<BidirectionalSequence1>,
+                  safe_cursor_type_t<BidirectionalSequence2>>
+        operator()(BidirectionalSequence1 && in, BidirectionalSequence2 && out) const
+        {
+            auto r = ::sayan::copy_fn{}(::sayan::make_reverse_cursor(std::forward<BidirectionalSequence1>(in)),
+                                        ::sayan::make_reverse_cursor(std::forward<BidirectionalSequence2>(out)));
+            return {std::move(r.first).base(), std::move(r.second).base()};
+        }
+    };
+
+    struct move_backward_fn
+    {
+        template <class BidirectionalSequence1, class BidirectionalSequence2>
+        std::pair<safe_cursor_type_t<BidirectionalSequence1>,
+                  safe_cursor_type_t<BidirectionalSequence2>>
+        operator()(BidirectionalSequence1 && in, BidirectionalSequence2 && out) const
+        {
+            auto r = ::sayan::move_fn{}(::sayan::make_reverse_cursor(std::forward<BidirectionalSequence1>(in)),
+                                        ::sayan::make_reverse_cursor(std::forward<BidirectionalSequence2>(out)));
+            return {std::move(r.first).base(), std::move(r.second).base()};
+        }
+    };
+
     struct remove_copy_if_fn
     {
         template <class InputSequence, class OutputSequence,
@@ -706,6 +733,47 @@ inline namespace v1
             }
 
             return {std::move(cur1), std::move(cur2)};
+        }
+    };
+
+    struct reverse_copy_fn
+    {
+        template <class BidirectionalSequence, class OutputSequence>
+        std::pair<safe_cursor_type_t<BidirectionalSequence>, safe_cursor_type_t<OutputSequence>>
+        operator()(BidirectionalSequence && in_seq, OutputSequence && out_seq) const
+        {
+            auto in = ::sayan::cursor_fwd<BidirectionalSequence>(in_seq);
+
+            auto r = ::sayan::copy_fn{}(::sayan::make_reverse_cursor(std::move(in)),
+                                        ::std::forward<OutputSequence>(out_seq));
+
+            return {std::move(r.first).base(), std::move(r.second)};
+        }
+    };
+
+    struct reverse_fn
+    {
+        template <class BidirectionalSequence>
+        void
+        operator()(BidirectionalSequence && seq) const
+        {
+            auto cur = ::sayan::cursor_fwd<BidirectionalSequence>(seq);
+
+            for(; !!cur;)
+            {
+                auto p = ::sayan::next(cur);
+
+                if(!p)
+                {
+                    break;
+                }
+
+                ::sayan::cursor_swap(cur, p, sayan::front, sayan::back);
+
+                p.drop(sayan::back);
+
+                cur = p;
+            }
         }
     };
 
@@ -1349,6 +1417,9 @@ inline namespace v1
 
         constexpr auto const & move = static_const<move_fn>;
 
+        constexpr auto const & copy_backward = static_const<copy_backward_fn>;
+        constexpr auto const & move_backward = static_const<move_backward_fn>;
+
         constexpr auto const & transform = static_const<transform_fn>;
 
         constexpr auto const & fill = static_const<fill_fn>;
@@ -1365,6 +1436,10 @@ inline namespace v1
         constexpr auto const & replace_copy_if = static_const<replace_copy_if_fn>;
 
         constexpr auto const & swap_ranges = static_const<swap_ranges_fn>;
+
+        constexpr auto const & reverse = static_const<reverse_fn>;
+        constexpr auto const & reverse_copy = static_const<reverse_copy_fn>;
+
         constexpr auto const & rotate = static_const<rotate_fn>;
         constexpr auto const & rotate_copy = static_const<rotate_copy_fn>;
 

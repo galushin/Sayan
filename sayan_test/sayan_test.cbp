@@ -43,11 +43,14 @@
 		<Unit filename="../include/sayan/cursor/istream.hpp" />
 		<Unit filename="../include/sayan/cursor/iterator_cursor.hpp" />
 		<Unit filename="../include/sayan/cursor/ostream.hpp" />
+		<Unit filename="../include/sayan/cursor/reverse.hpp" />
 		<Unit filename="../include/sayan/cursor/sequence_to_cursor.hpp" />
 		<Unit filename="../include/sayan/numeric.hpp" />
 		<Unit filename="../include/sayan/utility/static_const.hpp" />
 		<Unit filename="../include/sayan/utility/with_old_value.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="simple_test.cpp" />
+		<Unit filename="simple_test.hpp" />
 		<Unit filename="tests/algorithm/minmax.cpp" />
 		<Unit filename="tests/algorithm/modifying.cpp" />
 		<Unit filename="tests/algorithm/nonmodifying.cpp" />

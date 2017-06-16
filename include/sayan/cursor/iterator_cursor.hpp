@@ -41,7 +41,7 @@ inline namespace v1
         // Однопроходный курсор
         bool empty() const
         {
-            return this->begin_.value() == this->end_;
+            return this->begin_.value() == this->end_.value();
         }
 
         reference operator[](sayan::front_fn) const
@@ -71,13 +71,30 @@ inline namespace v1
 
         void exhaust(sayan::front_fn)
         {
-            this->begin_.value() = this->end_;
+            this->begin_.value() = this->end_.value();
         }
 
         void splice(iterator_cursor_type other)
         {
-            Check::ensure_equal(other.begin_.value(), this->end_);
+            Check::ensure_equal(other.begin_.value(), this->end_.value());
             this->end_ = other.end_;
+        }
+
+        // Двунаправленный курсор
+        reference operator[](sayan::back_fn) const
+        {
+            Check::ensure_not_empty(*this);
+            // @todo Более надёжный подход
+            auto i = this->end();
+            -- i;
+            return *i;
+        }
+
+        void drop(sayan::back_fn)
+        {
+            Check::ensure_not_empty(*this);
+
+            --this->end_.value();
         }
 
         // Итераторы
@@ -88,7 +105,7 @@ inline namespace v1
 
         Sentinel end() const
         {
-            return this->end_;
+            return this->end_.value();
         }
 
         Iterator traversed_begin() const
@@ -96,10 +113,15 @@ inline namespace v1
             return this->begin_.old_value();
         }
 
-    private:
-        ::sayan::with_old_value<Iterator> begin_;
+        Sentinel traversed_end() const
+        {
+            return this->end_.old_value();
+        }
 
-        Sentinel end_;
+    private:
+        // @todo Настройка структуры
+        ::sayan::with_old_value<Iterator> begin_;
+        ::sayan::with_old_value<Sentinel> end_;
     };
 }
 // namespace v1
