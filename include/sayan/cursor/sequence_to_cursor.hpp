@@ -105,6 +105,13 @@ inline namespace v1
             using std::swap;
             swap(*c1, *c2);
         }
+
+        template <class Cursor1, class Cursor2, class P1, class P2>
+        void operator()(Cursor1 const & c1, Cursor2 const & c2, P1 p1, P2 p2) const
+        {
+            using std::swap;
+            swap(c1[p1], c2[p2]);
+        }
     };
 
     struct next_fn
@@ -118,12 +125,25 @@ inline namespace v1
         }
     };
 
+    struct cursor_from_parts_fn
+    {
+        template <class Cursor>
+        Cursor operator()(Cursor pre, Cursor stem) const
+        {
+            pre = ::sayan::cursor(std::move(pre));
+            pre.exhaust(::sayan::front);
+            pre.splice(::sayan::cursor(std::move(stem)));
+            return pre;
+        }
+    };
+
     namespace
     {
         constexpr auto const & size = static_const<size_fn>;
         constexpr auto const & advance = static_const<advance_fn>;
         constexpr auto const & next = static_const<next_fn>;
         constexpr auto const & cursor_swap = static_const<cursor_swap_fn>;
+        constexpr auto const & cursor_from_parts = static_const<cursor_from_parts_fn>;
     }
 }
 // namespace v1

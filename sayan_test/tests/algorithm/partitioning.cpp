@@ -1,6 +1,8 @@
 #include <sayan/algorithm.hpp>
 
+#include "../../simple_test.hpp"
 #include <catch/catch.hpp>
+
 #include <forward_list>
 
 TEST_CASE("algorithm/partition_copy")
@@ -170,6 +172,32 @@ TEST_CASE("algorithm/partition")
 
     CHECK(r.traversed_begin() == xs.begin());
     CHECK(r.end() == xs.end());
+}
+
+TEST_CASE("algorithm/stable_partition")
+{
+    std::vector<int> xs;
+    auto const pred = [](auto const & x) { return x % 2 == 0; };
+
+    for(auto n = 20; n > 0; -- n, xs.push_back(sayan::test::get_arbitrary<int>()))
+    {
+        CAPTURE(xs);
+
+        auto xs_std = xs;
+        auto xs_sayan = xs;
+
+        auto const r_std = std::stable_partition(xs_std.begin(), xs_std.end(), pred);
+
+        auto const r_sayan = sayan::stable_partition(xs_sayan, pred);
+
+        REQUIRE(xs_std == xs_sayan);
+
+        REQUIRE(r_sayan.traversed_begin() == xs_sayan.begin());
+        REQUIRE(std::distance(xs_sayan.begin(), r_sayan.begin())
+                == std::distance(xs_std.begin(), r_std));
+        REQUIRE(r_sayan.end() == xs_sayan.end());
+        REQUIRE(r_sayan.traversed_end() == xs_sayan.end());
+    }
 }
 
 TEST_CASE("algorithm/partition_point")

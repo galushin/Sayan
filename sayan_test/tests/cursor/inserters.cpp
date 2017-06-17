@@ -4,14 +4,20 @@
 
 #include <catch/catch.hpp>
 
+#include "../../simple_test.hpp"
+
 TEST_CASE("cursors/back_inserter")
 {
-    std::string const src{"Herb Sutter"};
+    std::string src;
+    for(auto n = 20; n > 0; -- n, src.push_back(sayan::test::get_arbitrary<char>()))
+    {
+        INFO("src = " << src);
 
-    std::string dest;
-    sayan::copy(src, sayan::back_inserter(dest));
+        std::string dest;
+        sayan::copy(src, sayan::back_inserter(dest));
 
-    CHECK(dest == src);
+        CHECK(dest == src);
+    }
 }
 
 TEST_CASE("cursors/back_inserter: rvalue")
