@@ -10,7 +10,6 @@ namespace test
 {
     using random_engine_type = std::mt19937;
 
-    // @todo Подумать, как разрешить настроуку пользователю
     random_engine_type & random_engine();
 
     template <class T>
@@ -26,10 +25,10 @@ namespace test
     template <class T>
     struct arbitrary<T, std::enable_if_t<std::is_integral<T>::value>>
     {
-        static char make()
+        static T make()
         {
-            using L = std::numeric_limits<char>;
-            return ::sayan::test::random_integral<char>(L::min(), L::max());
+            using L = std::numeric_limits<T>;
+            return ::sayan::test::random_integral<T>(L::min(), L::max());
         }
     };
 

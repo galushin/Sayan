@@ -989,6 +989,61 @@ inline namespace v1
         }
     };
 
+    struct stable_partition_fn
+    {
+    public:
+        template <class BidirectionalSequence, class UnaryPredicate>
+        safe_cursor_type_t<BidirectionalSequence>
+        operator()(BidirectionalSequence && seq, UnaryPredicate pred) const
+        {
+            auto cur = ::sayan::cursor_fwd<BidirectionalSequence>(seq);
+
+            if(!cur)
+            {
+                return cur;
+            }
+
+            return this->impl_not_empty(std::move(cur), ::sayan::size(cur), std::move(pred));
+        }
+
+    private:
+        template <class BiCursor, class N, class UnaryPredicate>
+        BiCursor
+        impl_not_empty(BiCursor cur, N n, UnaryPredicate pred) const
+        {
+            if(n == N(1))
+            {
+                if(pred(*cur))
+                {
+                    ++ cur;
+                }
+                return cur;
+            }
+
+            auto const n_half = n / 2;
+
+            ::sayan::advance(cur, n_half);
+
+            // Разбиваем половины
+            auto const r1 = this->impl_not_empty(cur.traversed(::sayan::front), n_half, pred);
+            auto const r2 = this->impl_not_empty(::sayan::cursor(cur), n - n_half, pred);
+
+            // Вращаем
+            auto r = cursor_from_parts(r1, r2.traversed(::sayan::front));
+
+            r = ::sayan::rotate_fn{}(r);
+
+            // Формируем результат
+            auto result = r1.traversed(::sayan::front);
+            result.splice(r.traversed(::sayan::front));
+            result.exhaust(::sayan::front);
+            result.splice(r);
+            result.splice(r2);
+
+            return result;
+        }
+    };
+
     struct partition_point_fn
     {
         template <class ForwardSequence, class UnaryPredicate>
@@ -1112,6 +1167,68 @@ inline namespace v1
                                      safe_cursor_type_t<InputSequence2>,
                                      safe_cursor_type_t<OutputSequence>>;
             return Tuple{std::move(r1.first), std::move(r2.first), std::move(r2.second)};
+        }
+    };
+
+    struct inplace_merge_fn
+    {
+    public:
+        template <class BidirectionalCursor, class Compare = std::less<>>
+        void operator()(BidirectionalCursor cur, Compare cmp = Compare{}) const
+        {
+            if(!cur)
+            {
+                return;
+            }
+
+            auto c1 = cur.traversed(sayan::front);
+
+            if(!c1)
+            {
+                return;
+            }
+
+            auto const n1 = ::sayan::size(c1);
+
+            auto c2 = ::sayan::cursor(std::move(cur));
+            auto const n2 = ::sayan::size(c2);
+
+            return this->impl(c1, n1, c2, n2, std::move(cmp));
+        }
+
+    private:
+        template <class Cursor, class N, class Compare>
+        void impl(Cursor c1, N n1, Cursor c2, N n2, Compare cmp) const
+        {
+            if(n1 == 1 && n2 == 1)
+            {
+                if(cmp(*c2, *c1))
+                {
+                    ::sayan::cursor_swap(c2, c1);
+                    return;
+                }
+            }
+
+            // Находим точки разбиения
+            if(n1 > n2)
+            {
+                auto const n1_half = n1 / 2;
+                ::sayan::advance(c1, n1_half);
+
+                c2 = ::sayan::lower_bound_fn{}(c2, *c1, cmp);
+            }
+            else
+            {
+                auto const n2_half = n2 / 2;
+                ::sayan::advance(c2, n2_half);
+
+                c1 = ::sayan::lower_bound_fn{}(c1, *c2, cmp);
+            }
+
+            auto r = rotate_fn{}(cursor_from_parts(c1, c2.traversed(::sayan::front)));
+
+            (*this)(cursor_from_parts(c1.traversed(::sayan::front), r.traversed(::sayan::front)), cmp);
+            (*this)(cursor_from_parts(r, c2), cmp);
         }
     };
 
@@ -1386,6 +1503,47 @@ inline namespace v1
         }
     };
 
+    struct next_permutation_fn
+    {
+        template <class BidirectionalSequence, class Compare = std::less<>>
+        bool operator()(BidirectionalSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto cur = ::sayan::make_reverse_cursor(std::forward<BidirectionalSequence>(seq));
+
+            if(!cur)
+            {
+                return false;
+            }
+
+            auto j = is_sorted_until_fn{}(cur, cmp);
+
+            if(!j)
+            {
+                reverse_fn{}(cur.base());
+                return false;
+            }
+
+            using Ref = decltype(*cur);
+            auto i = find_if_fn{}(cur, [&](Ref x) { return cmp(*j, x); });
+
+            ::sayan::cursor_swap(j, i);
+
+            ::sayan::reverse_fn{}(j.traversed(sayan::front_fn{}).base());
+
+            return true;
+        }
+    };
+
+    struct prev_permutation_fn
+    {
+        template <class BidirectionalSequence, class Compare = std::less<>>
+        bool operator()(BidirectionalSequence && seq, Compare cmp = Compare{}) const
+        {
+            return ::sayan::next_permutation_fn{}(std::forward<BidirectionalSequence>(seq),
+                                                  std::experimental::not_fn(std::move(cmp)));
+        }
+    };
+
     namespace
     {
         constexpr auto const & all_of = static_const<all_of_fn>;
@@ -1450,6 +1608,7 @@ inline namespace v1
         constexpr auto const & partition = static_const<partition_fn>;
         constexpr auto const & partition_copy = static_const<partition_copy_fn>;
         constexpr auto const & partition_point = static_const<partition_point_fn>;
+        constexpr auto const & stable_partition = static_const<stable_partition_fn>;
 
         constexpr auto const & is_sorted = static_const<is_sorted_fn>;
         constexpr auto const & is_sorted_until = static_const<is_sorted_until_fn>;
@@ -1460,6 +1619,8 @@ inline namespace v1
         constexpr auto const & binary_search = static_const<binary_search_fn>;
 
         constexpr auto const & merge = static_const<merge_fn>;
+        constexpr auto const & inplace_merge = static_const<inplace_merge_fn>;
+
         constexpr auto const & includes = static_const<includes_fn>;
         constexpr auto const & set_union = static_const<set_union_fn>;
         constexpr auto const & set_intersection = static_const<set_intersection_fn>;
@@ -1474,6 +1635,8 @@ inline namespace v1
             = static_const<lexicographical_compare_fn>;
 
         constexpr auto const & is_permutation = static_const<is_permutation_fn>;
+        constexpr auto const & next_permutation = static_const<next_permutation_fn>;
+        constexpr auto const & prev_permutation = static_const<prev_permutation_fn>;
     }
 }
 //namespace v1

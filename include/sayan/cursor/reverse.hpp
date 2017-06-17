@@ -10,7 +10,7 @@ inline namespace v1
     /// @cond false
     namespace details
     {
-        struct reverse_indicies_fn
+        struct reverse_index_fn
         {
             ::sayan::back_fn operator()(::sayan::front_fn) const
             {
@@ -47,13 +47,20 @@ inline namespace v1
         template <class F>
         reference operator[](F f) const
         {
-            return this->base_[::sayan::details::reverse_indicies_fn{}(std::move(f))];
+            return this->base_[::sayan::details::reverse_index_fn{}(std::move(f))];
         }
 
         template <class F>
         void drop(F f)
         {
-            this->base_.drop(::sayan::details::reverse_indicies_fn{}(std::move(f)));
+            this->base_.drop(::sayan::details::reverse_index_fn{}(std::move(f)));
+        }
+
+        template <class F>
+        auto traversed(F f) const
+        {
+            auto b = this->base_.traversed(::sayan::details::reverse_index_fn{}(std::move(f)));
+            return reverse_cursor(std::move(b));
         }
 
         // Адаптор курсора

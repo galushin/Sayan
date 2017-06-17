@@ -1,6 +1,9 @@
 #include <sayan/algorithm.hpp>
 
+#include <algorithm>
+
 #include <catch/catch.hpp>
+#include "../../simple_test.hpp"
 
 #include <forward_list>
 
@@ -219,5 +222,66 @@ TEST_CASE("algorithm/equal_range: custom predicate")
         CHECK(r_sayan.traversed_begin() == xs.begin());
         CHECK(r_sayan.begin() == r_std.first);
         CHECK(r_sayan.end() == r_std.second);
+    }
+}
+
+TEST_CASE("algorithm/inplace_merge")
+{
+    std::vector<int> xs;
+
+    for(auto n = 12; n > 0; -- n, xs.push_back(sayan::test::get_arbitrary<short>()))
+    {
+        auto const m = ::sayan::test::random_integral(0*xs.size(), xs.size());
+
+        // Готовим данные
+        auto xs_temp = xs;
+        {
+            auto const i = ::std::next(xs_temp.begin(), m);
+            ::std::sort(xs_temp.begin(), i);
+            ::std::sort(i, xs_temp.end());
+        }
+        CAPTURE(xs_temp);
+
+        std::vector<int> xs_std(xs_temp.begin(), xs_temp.end());
+        std::vector<int> xs_sayan = xs_std;
+
+        // Выполняем
+        ::std::inplace_merge(xs_std.begin(), ::std::next(xs_std.begin(), m), xs_std.end());
+
+        ::sayan::inplace_merge(::sayan::next(::sayan::cursor(xs_sayan), m));
+
+        // Проверяем
+        REQUIRE(xs_sayan == xs_std);
+    }
+}
+
+TEST_CASE("algorithm/inplace_merge: custom compare")
+{
+    std::vector<int> xs;
+    auto const cmp = ::std::greater<>{};
+
+    for(auto n = 12; n > 0; -- n, xs.push_back(sayan::test::get_arbitrary<short>()))
+    {
+        auto const m = ::sayan::test::random_integral(0*xs.size(), xs.size());
+
+        // Готовим данные
+        auto xs_temp = xs;
+        {
+            auto const i = ::std::next(xs_temp.begin(), m);
+            ::std::sort(xs_temp.begin(), i, cmp);
+            ::std::sort(i, xs_temp.end(), cmp);
+        }
+        CAPTURE(xs_temp);
+
+        std::list<int> xs_std(xs_temp.begin(), xs_temp.end());
+        std::list<int> xs_sayan = xs_std;
+
+        // Выполняем
+        ::std::inplace_merge(xs_std.begin(), ::std::next(xs_std.begin(), m), xs_std.end(), cmp);
+
+        ::sayan::inplace_merge(::sayan::next(::sayan::cursor(xs_sayan), m), cmp);
+
+        // Проверяем
+        REQUIRE(xs_sayan == xs_std);
     }
 }

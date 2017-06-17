@@ -4,6 +4,7 @@
 #include <list>
 #include <vector>
 
+#include "../../simple_test.hpp"
 #include <catch/catch.hpp>
 
 TEST_CASE("algorithm/is_permutation: default predicate")
@@ -91,4 +92,116 @@ TEST_CASE("algorithm/is_permutation: same length, different element")
     auto const r = sayan::is_permutation(xs_1, xs_2, pred);
 
     CHECK(r == r_std);
+}
+
+TEST_CASE("algorithm/next_permutation")
+{
+    std::list<int> xs;
+    for(auto n = 12; n > 0; -- n, xs.push_back(sayan::test::get_arbitrary<int>()))
+    {
+        CAPTURE(xs);
+
+        auto xs_std = xs;
+        auto const r_std = std::next_permutation(xs_std.begin(), xs_std.end());
+
+        auto xs_sayan = xs;
+        auto const r_sayan = sayan::next_permutation(xs_sayan);
+
+        REQUIRE(xs_sayan == xs_std);
+        REQUIRE(r_sayan == r_std);
+
+        if(r_sayan)
+        {
+            REQUIRE(::sayan::lexicographical_compare(xs, xs_sayan));
+        }
+        else
+        {
+            REQUIRE(::sayan::is_sorted(xs_sayan));
+        }
+    }
+}
+
+TEST_CASE("algorithm/next_permutation: custom compare")
+{
+    auto const cmp = ::std::greater<>{};
+
+    std::list<int> xs;
+    for(auto n = 12; n > 0; -- n, xs.push_back(sayan::test::get_arbitrary<int>()))
+    {
+        CAPTURE(xs);
+
+        auto xs_std = xs;
+        auto const r_std = std::next_permutation(xs_std.begin(), xs_std.end(), cmp);
+
+        auto xs_sayan = xs;
+        auto const r_sayan = sayan::next_permutation(xs_sayan, cmp);
+
+        REQUIRE(xs_sayan == xs_std);
+        REQUIRE(r_sayan == r_std);
+
+        if(r_sayan)
+        {
+            REQUIRE(::sayan::lexicographical_compare(xs, xs_sayan, cmp));
+        }
+        else
+        {
+            REQUIRE(::sayan::is_sorted(xs_sayan, cmp));
+        }
+    }
+}
+
+TEST_CASE("algorithm/prev_permutation")
+{
+    std::list<int> xs;
+    for(auto n = 12; n > 0; -- n, xs.push_back(sayan::test::get_arbitrary<int>()))
+    {
+        CAPTURE(xs);
+
+        auto xs_std = xs;
+        auto const r_std = std::prev_permutation(xs_std.begin(), xs_std.end());
+
+        auto xs_sayan = xs;
+        auto const r_sayan = sayan::prev_permutation(xs_sayan);
+
+        REQUIRE(xs_sayan == xs_std);
+        REQUIRE(r_sayan == r_std);
+
+        if(r_sayan)
+        {
+            REQUIRE(::sayan::lexicographical_compare(xs_sayan, xs));
+        }
+        else
+        {
+            REQUIRE(::sayan::is_sorted(sayan::make_reverse_cursor(xs_sayan)));
+        }
+    }
+}
+
+TEST_CASE("algorithm/prev_permutation: custom compare")
+{
+    auto const cmp = ::std::greater<>{};
+
+    std::list<int> xs;
+    for(auto n = 12; n > 0; -- n, xs.push_back(sayan::test::get_arbitrary<int>()))
+    {
+        CAPTURE(xs);
+
+        auto xs_std = xs;
+        auto const r_std = std::prev_permutation(xs_std.begin(), xs_std.end(), cmp);
+
+        auto xs_sayan = xs;
+        auto const r_sayan = sayan::prev_permutation(xs_sayan, cmp);
+
+        REQUIRE(xs_sayan == xs_std);
+        REQUIRE(r_sayan == r_std);
+
+        if(r_sayan)
+        {
+            REQUIRE(::sayan::lexicographical_compare(xs_sayan, xs, cmp));
+        }
+        else
+        {
+            REQUIRE(::sayan::is_sorted(sayan::make_reverse_cursor(xs_sayan), cmp));
+        }
+    }
 }

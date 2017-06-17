@@ -636,7 +636,6 @@ TEST_CASE("algorithm/move_backward")
         auto dest_v = dest;
 
         // Запаковываем
-        // @todo Вынести
         std::list<std::unique_ptr<int>> dest_p;
         for(auto const & x : dest)
         {
@@ -1249,7 +1248,7 @@ TEST_CASE("algorithm/swap_ranges: different sizes")
 TEST_CASE("algorithm/reverse_copy: minimal")
 {
     std::list<int> src;
-    for(auto n = 12; n > 0; -- n, src.push_back(sayan::test::get_arbitrary<char>()))
+    for(auto n = 12; n > 0; -- n, src.push_back(sayan::test::get_arbitrary<int>()))
     {
         CAPTURE(src);
 
@@ -1298,7 +1297,7 @@ TEST_CASE("algorithm/reverse_copy")
 TEST_CASE("algorithm/reverse")
 {
     std::list<int> xs;
-    for(auto n = 20; n > 0; -- n, xs.push_back(sayan::test::get_arbitrary<char>()))
+    for(auto n = 20; n > 0; -- n, xs.push_back(sayan::test::get_arbitrary<int>()))
     {
         CAPTURE(xs);
 

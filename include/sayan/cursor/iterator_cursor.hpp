@@ -84,7 +84,7 @@ inline namespace v1
         reference operator[](sayan::back_fn) const
         {
             Check::ensure_not_empty(*this);
-            // @todo Более надёжный подход
+
             auto i = this->end();
             -- i;
             return *i;
@@ -95,6 +95,11 @@ inline namespace v1
             Check::ensure_not_empty(*this);
 
             --this->end_.value();
+        }
+
+        iterator_cursor_type traversed(sayan::back_fn) const
+        {
+            return iterator_cursor_type(this->end_.value(), this->end_.old_value());
         }
 
         // Итераторы
@@ -119,7 +124,6 @@ inline namespace v1
         }
 
     private:
-        // @todo Настройка структуры
         ::sayan::with_old_value<Iterator> begin_;
         ::sayan::with_old_value<Sentinel> end_;
     };
