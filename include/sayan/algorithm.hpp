@@ -503,6 +503,23 @@ inline namespace v1
         }
     };
 
+    struct fill_n_fn
+    {
+        template <class OutputSequence, class Size, class T>
+        safe_cursor_type_t<OutputSequence>
+        operator()(OutputSequence && out, Size n, T const & value) const
+        {
+            auto cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!cur && n > 0; -- n)
+            {
+                cur << value;
+            }
+
+            return cur;
+        }
+    };
+
     struct generate_fn
     {
         template <class OutputSequence, class Generator>
@@ -514,6 +531,23 @@ inline namespace v1
             {
                 *cur = gen();
             }
+        }
+    };
+
+    struct generate_n_fn
+    {
+        template <class OutputSequence, class Size, class Generator>
+        safe_cursor_type_t<OutputSequence>
+        operator()(OutputSequence && out, Size n, Generator gen) const
+        {
+            auto cur = sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!cur && n > 0; -- n)
+            {
+                cur << gen();
+            }
+
+            return cur;
         }
     };
 
@@ -535,6 +569,27 @@ inline namespace v1
                 {
                     out_cur << *in_cur;
                 }
+            }
+
+            return {std::move(in_cur), std::move(out_cur)};
+        }
+    };
+
+    struct copy_n_fn
+    {
+        template <class InputSequence, class Size, class OutputSequence>
+        std::pair<safe_cursor_type_t<InputSequence>,
+                  safe_cursor_type_t<OutputSequence>>
+        operator()(InputSequence && in, Size n, OutputSequence && out) const
+        {
+            auto in_cur = ::sayan::cursor_fwd<InputSequence>(in);
+            auto out_cur = ::sayan::cursor_fwd<OutputSequence>(out);
+
+            for(; !!in_cur && !!out_cur && n > 0; ++ in_cur)
+            {
+                out_cur << *in_cur;
+
+                -- n;
             }
 
             return {std::move(in_cur), std::move(out_cur)};
@@ -1572,6 +1627,7 @@ inline namespace v1
 
         constexpr auto const & copy = static_const<copy_fn>;
         constexpr auto const & copy_if = static_const<copy_if_fn>;
+        constexpr auto const & copy_n = static_const<copy_n_fn>;
 
         constexpr auto const & move = static_const<move_fn>;
 
@@ -1581,7 +1637,9 @@ inline namespace v1
         constexpr auto const & transform = static_const<transform_fn>;
 
         constexpr auto const & fill = static_const<fill_fn>;
+        constexpr auto const & fill_n = static_const<fill_n_fn>;
         constexpr auto const & generate = static_const<generate_fn>;
+        constexpr auto const & generate_n = static_const<generate_n_fn>;
 
         constexpr auto const & remove = static_const<remove_fn>;
         constexpr auto const & remove_if = static_const<remove_if_fn>;

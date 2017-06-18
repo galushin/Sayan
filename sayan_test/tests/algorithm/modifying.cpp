@@ -83,6 +83,68 @@ TEST_CASE("algorithm/copy: to longer")
     CHECK(std::get<1>(result).end() == dest.end());
 }
 
+TEST_CASE("algorithm/copy_n: minimalistic")
+{
+    auto const n1 = ::sayan::test::random_integral<size_t>(0, 20);
+    auto const n = ::sayan::test::random_integral<size_t>(0, 2*n1);
+
+    std::string src;
+    for(auto m = n1; m > 0; -- m)
+    {
+        src.push_back(::sayan::test::get_arbitrary<char>());
+    }
+    auto const src_old = src;
+
+    std::string dest;
+    ::sayan::copy_n(std::istringstream(src), n, ::sayan::back_inserter(dest));
+
+    auto const n_copied = std::min(src.size(), n);
+
+    CHECK(dest == src.substr(0, n_copied));
+    CHECK(src == src_old);
+}
+
+TEST_CASE("algorithm/copy_n")
+{
+    auto const n1 = ::sayan::test::random_integral<size_t>(0, 20);
+    auto const n2 = ::sayan::test::random_integral<size_t>(0, 20);
+    auto const n = ::sayan::test::random_integral<size_t>(0, 2*n1);
+
+    std::string src;
+    for(auto m = n1; m > 0; -- m)
+    {
+        src.push_back(::sayan::test::get_arbitrary<char>());
+    }
+    auto const src_old = src;
+
+    std::string dest;
+    for(auto m = n2; m > 0; -- m)
+    {
+        dest.push_back(::sayan::test::get_arbitrary<char>());
+    }
+    auto const dest_old = dest;
+
+    auto const r = ::sayan::copy_n(src, n, dest);
+
+    auto const n_copied = std::min(n, std::min(src.size(), dest.size()));
+
+    // Проверки
+    CHECK(r.first.traversed_begin() == src.begin());
+    CHECK(r.first.begin() == src.begin() + n_copied);
+    CHECK(r.first.end() == src.end());
+    CHECK(r.first.traversed_end() == src.end());
+
+    CHECK(r.second.traversed_begin() == dest.begin());
+    CHECK(r.second.begin() == dest.begin() + n_copied);
+    CHECK(r.second.end() == dest.end());
+    CHECK(r.second.traversed_end() == dest.end());
+
+    CHECK(dest.substr(0, n_copied) == src.substr(0, n_copied));
+    CHECK(dest.substr(n_copied, dest.size()) == dest_old.substr(n_copied, dest.size()));
+
+    CHECK(src == src_old);
+}
+
 TEST_CASE("cursors/move")
 {
     std::vector<int> const ns{1,2,3,5,8,13};
@@ -417,6 +479,83 @@ TEST_CASE("algorithm/fill")
     ::sayan::fill(xs, x_new);
 
     CHECK(xs == obj);
+}
+
+TEST_CASE("algorithm/fill_n: minimalistic")
+{
+    auto const n = ::sayan::test::random_integral<size_t>(0, 20);
+    auto const value = 42;
+
+    std::vector<int> out_std;
+    ::std::fill_n(std::back_inserter(out_std), n, value);
+
+    std::vector<int> out_sayan;
+    ::sayan::fill_n(sayan::back_inserter(out_sayan), n, value);
+
+    CHECK(out_sayan == out_std);
+}
+
+TEST_CASE("algorithm/fill_n")
+{
+    auto const n = ::sayan::test::random_integral<size_t>(0, 20);
+    auto const value = 42;
+    auto const m = ::sayan::test::random_integral<size_t>(0, 2*n);
+    auto const init_value = 13;
+
+    std::vector<int> out_std(m, init_value);
+    auto r_std = ::std::fill_n(out_std.begin(), std::min(n, out_std.size()), value);
+
+    std::vector<int> out_sayan(m, init_value);
+    auto r_sayan = ::sayan::fill_n(out_sayan, n, value);
+
+    CHECK(out_sayan == out_std);
+
+    CHECK(r_sayan.traversed_begin() == out_sayan.begin());
+    CHECK(r_sayan.begin() - out_sayan.begin() == r_std - out_std.begin());
+    CHECK(r_sayan.end() == out_sayan.end());
+    CHECK(r_sayan.traversed_end() == out_sayan.end());
+}
+
+TEST_CASE("algorithm/generate_n: minimalistic")
+{
+    auto const n = ::sayan::test::random_integral<size_t>(0, 20);
+    auto const start_value = 42;
+
+    auto acc = start_value;
+    auto const gen = [&acc]() { return ++acc;};
+    std::vector<int> out_std;
+    ::std::generate_n(std::back_inserter(out_std), n, gen);
+
+    acc = start_value;
+    std::vector<int> out_sayan;
+    ::sayan::generate_n(sayan::back_inserter(out_sayan), n, gen);
+
+    CHECK(out_sayan == out_std);
+}
+
+TEST_CASE("algorithm/generate_n")
+{
+    auto const n = ::sayan::test::random_integral<size_t>(0, 20);
+    auto const start_value = 42;
+    auto const m = ::sayan::test::random_integral<size_t>(0, 2*n);
+    auto const init_value = 13;
+
+    auto acc = start_value;
+    auto const gen = [&acc]() { return ++acc;};
+
+    std::vector<int> out_std(m, init_value);
+    auto r_std = ::std::generate_n(out_std.begin(), std::min(n, out_std.size()), gen);
+
+    acc = start_value;
+    std::vector<int> out_sayan(m, init_value);
+    auto r_sayan = ::sayan::generate_n(out_sayan, n, gen);
+
+    CHECK(out_sayan == out_std);
+
+    CHECK(r_sayan.traversed_begin() == out_sayan.begin());
+    CHECK(r_sayan.begin() - out_sayan.begin() == r_std - out_std.begin());
+    CHECK(r_sayan.end() == out_sayan.end());
+    CHECK(r_sayan.traversed_end() == out_sayan.end());
 }
 
 TEST_CASE("algorithm/generate")
