@@ -58,6 +58,13 @@ inline namespace v1
             ++this->begin_.value();
         }
 
+        void drop(sayan::front_fn, difference_type n)
+        {
+            Check::check_step(*this, n);
+
+            this->begin_.value() += n;
+        }
+
         // Прямой курсор
         iterator_cursor_type traversed(sayan::front_fn) const
         {
@@ -100,6 +107,19 @@ inline namespace v1
         iterator_cursor_type traversed(sayan::back_fn) const
         {
             return iterator_cursor_type(this->end_.value(), this->end_.old_value());
+        }
+
+        // Курсор произвольного доступа
+        reference operator[](difference_type index) const
+        {
+            Check::check_index(*this, index);
+
+            return this->begin()[index];
+        }
+
+        difference_type size() const
+        {
+            return this->end() - this->begin();
         }
 
         // Итераторы

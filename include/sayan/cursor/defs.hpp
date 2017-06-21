@@ -99,6 +99,14 @@ inline namespace v1
 
     template <class T>
     using difference_type_t = typename cursor_traits<T>::difference_type;
+
+    template <class Cursor, class = std::enable_if_t<is_cursor<Cursor>::value>>
+    Cursor &
+    operator+=(Cursor & cur, difference_type_t<Cursor> n)
+    {
+        cur.drop(::sayan::front_fn{}, n);
+        return cur;
+    }
 }
 //inline namespace v1
 }

@@ -285,3 +285,349 @@ TEST_CASE("algorithm/inplace_merge: custom compare")
         REQUIRE(xs_sayan == xs_std);
     }
 }
+
+TEST_CASE("algorithm/is_heap_until")
+{
+    std::vector<int> xs;
+    for(auto n = 12; n > 0; -- n)
+    {
+        CAPTURE(xs);
+
+        auto const r_std = std::is_heap_until(xs.begin(), xs.end());
+
+        auto const r = ::sayan::is_heap_until(xs);
+
+        REQUIRE(r.traversed_begin() == xs.begin());
+        REQUIRE((r.begin() - xs.begin()) == (r_std - xs.begin()));
+        REQUIRE(r.end() == xs.end());
+        REQUIRE(r.traversed_end() == xs.end());
+
+        xs.push_back(sayan::test::get_arbitrary<int>());
+    }
+}
+
+TEST_CASE("algorithm/is_heap_until: custom predicate")
+{
+    std::vector<int> xs;
+    auto const cmp = ::std::greater<>{};
+
+    for(auto n = 12; n > 0; -- n)
+    {
+        CAPTURE(xs);
+
+        auto const r_std = std::is_heap_until(xs.begin(), xs.end(), cmp);
+
+        auto const r = ::sayan::is_heap_until(xs, cmp);
+
+        REQUIRE(r.traversed_begin() == xs.begin());
+        REQUIRE(r.begin() == r_std);
+        REQUIRE(r.end() == xs.end());
+        REQUIRE(r.traversed_end() == xs.end());
+
+        xs.push_back(sayan::test::get_arbitrary<int>());
+    }
+}
+
+TEST_CASE("algorithm/is_heap_until: custom predicate, on heap")
+{
+    std::vector<int> xs;
+    auto const cmp = ::std::greater<>{};
+
+    for(auto n = 12; n > 0; -- n)
+    {
+        CAPTURE(xs);
+
+        auto const r_std = std::is_heap_until(xs.begin(), xs.end(), cmp);
+
+        auto const r = ::sayan::is_heap_until(xs, cmp);
+
+        REQUIRE(r_std == xs.end());
+
+        REQUIRE(r.traversed_begin() == xs.begin());
+        REQUIRE(r.begin() == r_std);
+        REQUIRE(r.end() == xs.end());
+        REQUIRE(r.traversed_end() == xs.end());
+
+        xs.push_back(sayan::test::get_arbitrary<int>());
+        std::push_heap(xs.begin(), xs.end(), cmp);
+    }
+}
+
+TEST_CASE("algorithm/is_heap")
+{
+    std::vector<int> xs;
+    for(auto n = 12; n > 0; -- n)
+    {
+        CAPTURE(xs);
+
+        auto const r_std = std::is_heap(xs.begin(), xs.end());
+
+        auto const r = ::sayan::is_heap(xs);
+
+        REQUIRE(r == r_std);
+
+        xs.push_back(sayan::test::get_arbitrary<int>());
+    }
+}
+
+TEST_CASE("algorithm/is_heap: custom predicate")
+{
+    using Input = std::vector<int>;
+    auto test_code = [](Input const & xs)
+    {
+        auto const cmp = ::std::greater<>{};
+
+        CAPTURE(xs);
+        auto const r_std = std::is_heap(xs.begin(), xs.end(), cmp);
+
+        auto const r = ::sayan::is_heap(xs, cmp);
+
+        REQUIRE(r == r_std);
+
+        auto xs_heap = xs;
+        std::make_heap(xs_heap.begin(), xs_heap.end(), cmp);
+
+        REQUIRE(::sayan::is_heap(xs_heap, cmp));
+    };
+
+    Input xs;
+
+    test_code(xs);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+
+        test_code(xs);
+    }
+}
+
+TEST_CASE("algorithm/push_heap")
+{
+    using Input = std::vector<int>;
+
+    auto test_code = [](Input xs)
+    {
+        CAPTURE(xs);
+
+        REQUIRE((xs.empty() || std::is_heap(xs.begin(), xs.end() - 1)));
+
+        ::sayan::push_heap(xs);
+
+        REQUIRE(::std::is_heap(xs.begin(), xs.end()));
+        REQUIRE(::sayan::is_heap(xs));
+    };
+
+    Input xs;
+
+    test_code(xs);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+        std::push_heap(xs.begin(), xs.end());
+
+        test_code(xs);
+    }
+}
+
+TEST_CASE("algorithm/push_heap: custom predicate")
+{
+    using Input = std::vector<int>;
+
+    auto const cmp = ::std::greater<>{};
+
+    auto test_code = [=](Input xs)
+    {
+        CAPTURE(xs);
+        REQUIRE((xs.empty() || std::is_heap(xs.begin(), xs.end() - 1, cmp)));
+
+        ::sayan::push_heap(xs, cmp);
+
+        REQUIRE(::std::is_heap(xs.begin(), xs.end(), cmp));
+        REQUIRE(::sayan::is_heap(xs, cmp));
+    };
+
+    Input xs;
+
+    test_code(xs);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+        std::push_heap(xs.begin(), xs.end(), cmp);
+
+        test_code(xs);
+    }
+}
+
+TEST_CASE("algorithm/pop_heap")
+{
+    using Input = std::vector<int>;
+
+    auto test_code = [](Input xs)
+    {
+        CAPTURE(xs);
+
+        REQUIRE(std::is_heap(xs.begin(), xs.end()));
+
+        if(xs.empty())
+        {
+            ::sayan::pop_heap(xs);
+        }
+        else
+        {
+            auto const old_top = xs.front();
+
+            ::sayan::pop_heap(xs);
+
+            CAPTURE(xs);
+            REQUIRE(xs.back() == old_top);
+            REQUIRE((xs.empty() || ::std::is_heap(xs.begin(), xs.end() - 1)));
+        }
+    };
+
+    Input xs;
+    test_code(xs);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+        std::push_heap(xs.begin(), xs.end());
+
+        test_code(xs);
+    }
+}
+
+TEST_CASE("algorithm/pop_heap: custom predicate")
+{
+    using Input = std::vector<int>;
+    auto const cmp = ::std::greater<>{};
+
+    auto test_code = [=](Input xs)
+    {
+        CAPTURE(xs);
+
+        REQUIRE(std::is_heap(xs.begin(), xs.end(), cmp));
+
+        if(xs.empty())
+        {
+            ::sayan::pop_heap(xs, cmp);
+        }
+        else
+        {
+            auto const old_top = xs.front();
+
+            ::sayan::pop_heap(xs, cmp);
+
+            REQUIRE(xs.back() == old_top);
+            REQUIRE((xs.empty() || ::std::is_heap(xs.begin(), xs.end() - 1, cmp)));
+        }
+    };
+
+    Input xs;
+    test_code(xs);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+        std::push_heap(xs.begin(), xs.end(), cmp);
+
+        test_code(xs);
+    }
+}
+
+TEST_CASE("algorithm/make_heap")
+{
+    using Input = std::vector<int>;
+
+    auto test_code = [](Input xs)
+    {
+        CAPTURE(xs);
+
+        ::sayan::make_heap(xs);
+
+        CAPTURE(xs);
+        REQUIRE(::std::is_heap(xs.begin(), xs.end()));
+    };
+
+    Input xs;
+    test_code(xs);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+
+        test_code(xs);
+    }
+}
+
+TEST_CASE("algorithm/make_heap: custom predicate")
+{
+    using Input = std::vector<int>;
+    auto const cmp = ::std::greater<>{};
+
+    auto test_code = [=](Input xs)
+    {
+        CAPTURE(xs);
+
+        ::sayan::make_heap(xs, cmp);
+
+        CAPTURE(xs);
+        REQUIRE(::std::is_heap(xs.begin(), xs.end(), cmp));
+    };
+
+    Input xs;
+    test_code(xs);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+
+        test_code(xs);
+    }
+}
+
+TEST_CASE("algorithm/sort_heap")
+{
+    using Input = std::vector<int>;
+
+    auto test_code = [=](Input xs)
+    {
+        CAPTURE(xs);
+
+        ::sayan::sort_heap(xs);
+
+        CAPTURE(xs);
+        REQUIRE(::std::is_sorted(xs.begin(), xs.end()));
+    };
+
+    Input xs;
+    test_code(xs);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+        ::sayan::push_heap(xs);
+
+        test_code(xs);
+    }
+}
+
+TEST_CASE("algorithm/sort_heap: custom predicate")
+{
+    using Input = std::vector<int>;
+    auto const cmp = ::std::greater<>{};
+
+    auto test_code = [=](Input xs)
+    {
+        CAPTURE(xs);
+
+        ::sayan::sort_heap(xs, cmp);
+
+        CAPTURE(xs);
+        REQUIRE(::std::is_sorted(xs.begin(), xs.end(), cmp));
+    };
+
+    Input xs;
+    test_code(xs);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+        ::sayan::push_heap(xs, cmp);
+
+        test_code(xs);
+    }
+}

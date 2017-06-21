@@ -1458,6 +1458,170 @@ inline namespace v1
         }
     };
 
+    namespace details
+    {
+        template <class IntType>
+        IntType heap_parent(IntType index)
+        {
+            return (index - 1) / 2;
+        }
+
+        template <class RandomAccessCursor, class Size, class Compare>
+        void heap_sink(RandomAccessCursor cur, Size pos, Size n, Compare cmp)
+        {
+            for(;;)
+            {
+                auto c = 2*pos+1;
+
+                if(c >= n)
+                {
+                    return;
+                }
+
+                auto const c2 = c+1;
+
+                if(c2 < n && !cmp(cur[c2], cur[c]))
+                {
+                    c = c2;
+                }
+
+                if(cmp(cur[c], cur[pos]))
+                {
+                    return;
+                }
+
+                ::sayan::cursor_swap(cur, cur, pos, c);
+                pos = c;
+            }
+        }
+    }
+    // namespace details
+
+    struct is_heap_until_fn
+    {
+        template <class RandomAccessSequence, class Compare = std::less<>>
+        safe_cursor_type_t<RandomAccessSequence>
+        operator()(RandomAccessSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto cur = ::sayan::cursor_fwd<RandomAccessSequence>(seq);
+
+            if(!cur)
+            {
+                return cur;
+            }
+
+            auto const n = ::sayan::size(cur);
+
+            auto i = 1 + 0*n;
+            for(; i < n; ++ i)
+            {
+                if(cmp(cur[details::heap_parent(i)], cur[i]))
+                {
+                    break;
+                }
+            }
+
+            cur += i;
+            return cur;
+        }
+    };
+
+    struct is_heap_fn
+    {
+        template <class RandomAccessSequence, class Compare = std::less<>>
+        bool operator()(RandomAccessSequence && seq, Compare cmp = Compare{}) const
+        {
+            return !is_heap_until_fn{}(std::forward<RandomAccessSequence>(seq), std::move(cmp));
+        }
+    };
+
+    struct push_heap_fn
+    {
+        template <class RandomAccessSequence, class Compare = std::less<>>
+        void operator()(RandomAccessSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto const cur = ::sayan::cursor_fwd<RandomAccessSequence>(seq);
+
+            if(!cur)
+            {
+                return;
+            }
+
+            auto pos = ::sayan::size(cur) - 1;
+
+            for(; pos != 0; )
+            {
+                auto const parent = details::heap_parent(pos);
+
+                if(cmp(cur[parent], cur[pos]))
+                {
+                    ::sayan::cursor_swap(cur, cur, parent, pos);
+                }
+
+                pos = parent;
+            }
+        }
+    };
+
+    struct pop_heap_fn
+    {
+        template <class RandomAccessSequence, class Compare = std::less<>>
+        void operator()(RandomAccessSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto const cur = ::sayan::cursor_fwd<RandomAccessSequence>(seq);
+
+            if(!cur)
+            {
+                return;
+            }
+
+            auto const n = ::sayan::size(cur);
+            if(n == 1)
+            {
+                return;
+            }
+
+            ::sayan::cursor_swap(cur, cur, 0*n, n-1);
+
+            details::heap_sink(cur, 0*n, n-1, cmp);
+        }
+    };
+
+    struct make_heap_fn
+    {
+        template <class RandomAccessSequence, class Compare = std::less<>>
+        void operator()(RandomAccessSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto const cur = ::sayan::cursor_fwd<RandomAccessSequence>(seq);
+
+            if(!cur)
+            {
+                return;
+            }
+
+            auto const n = ::sayan::size(cur);
+
+            for(auto i = details::heap_parent(n+1); i > 0; -- i)
+            {
+                details::heap_sink(cur, i-1, n, cmp);
+            }
+        }
+    };
+
+    struct sort_heap_fn
+    {
+        template <class RandomAccessSequence, class Compare = std::less<>>
+        void operator()(RandomAccessSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto cur = ::sayan::cursor_fwd<RandomAccessSequence>(seq);
+
+            for(; !!cur; cur.drop(sayan::back_fn{}))
+            {
+                ::sayan::pop_heap_fn{}(cur, cmp);
+            }
+        }
+    };
+
     struct min_element_fn
     {
         template <class ForwardSequence, class Compare = std::less<>>
@@ -1684,6 +1848,13 @@ inline namespace v1
         constexpr auto const & set_intersection = static_const<set_intersection_fn>;
         constexpr auto const & set_difference = static_const<set_difference_fn>;
         constexpr auto const & set_symmetric_difference = static_const<set_symmetric_difference_fn>;
+
+        constexpr auto const & is_heap = static_const<is_heap_fn>;
+        constexpr auto const & is_heap_until = static_const<is_heap_until_fn>;
+        constexpr auto const & push_heap = static_const<push_heap_fn>;
+        constexpr auto const & pop_heap = static_const<pop_heap_fn>;
+        constexpr auto const & make_heap = static_const<make_heap_fn>;
+        constexpr auto const & sort_heap = static_const<sort_heap_fn>;
 
         constexpr auto const & min_element = static_const<min_element_fn>;
         constexpr auto const & max_element = static_const<max_element_fn>;
