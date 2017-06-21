@@ -1622,6 +1622,84 @@ inline namespace v1
         }
     };
 
+    struct partial_sort_copy_fn
+    {
+        template <class InputSequence, class RandomAccessSequence, class Compare = std::less<>>
+        std::pair<safe_cursor_type_t<InputSequence>, safe_cursor_type_t<RandomAccessSequence>>
+        operator()(InputSequence && in_seq, RandomAccessSequence && out_seq,
+                   Compare cmp = Compare{}) const
+        {
+            auto in = ::sayan::cursor_fwd<InputSequence>(in_seq);
+            auto out = ::sayan::cursor_fwd<RandomAccessSequence>(out_seq);
+
+            if(!out || !in)
+            {
+                return {std::move(in), std::move(out)};
+            }
+
+            std::tie(in, out) = sayan::copy_fn{}(std::move(in), std::move(out));
+
+            auto h = out.traversed(::sayan::front);
+            auto const n = ::sayan::size(h);
+            ::sayan::make_heap_fn{}(h, cmp);
+
+            for(; !!in; ++ in)
+            {
+                if(cmp(*in, *h))
+                {
+                    *h = *in;
+                    details::heap_sink(h, 0*n, n, cmp);
+                }
+            }
+
+            ::sayan::sort_heap_fn{}(std::move(h), cmp);
+
+            return {std::move(in), std::move(out)};
+        }
+    };
+
+    struct partial_sort_fn
+    {
+        template <class RandomAccessCursor, class Compare = std::less<>>
+        void operator()(RandomAccessCursor cur, Compare cmp = Compare{}) const
+        {
+            auto h = cur.traversed(sayan::front);
+
+            if(!h)
+            {
+                return;
+            }
+
+            auto const n = ::sayan::size(h);
+
+            ::sayan::make_heap_fn{}(h, cmp);
+
+            for(; !!cur; ++ cur)
+            {
+                if(cmp(*cur, *h))
+                {
+                    ::sayan::cursor_swap(cur, h);
+                    details::heap_sink(h, 0*n, n, cmp);
+                }
+            }
+
+            ::sayan::sort_heap_fn{}(std::move(h), std::move(cmp));
+        }
+    };
+
+    struct sort_fn
+    {
+        template <class RandomAccessSequence, class Compare = std::less<>>
+        void operator()(RandomAccessSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto cur = ::sayan::cursor_fwd<RandomAccessSequence>(seq);
+
+            cur.exhaust(sayan::front);
+
+            ::sayan::partial_sort_fn{}(std::move(cur), std::move(cmp));
+        }
+    };
+
     struct min_element_fn
     {
         template <class ForwardSequence, class Compare = std::less<>>
@@ -1834,6 +1912,11 @@ inline namespace v1
 
         constexpr auto const & is_sorted = static_const<is_sorted_fn>;
         constexpr auto const & is_sorted_until = static_const<is_sorted_until_fn>;
+
+        constexpr auto const & sort = static_const<sort_fn>;
+
+        constexpr auto const & partial_sort = static_const<partial_sort_fn>;
+        constexpr auto const & partial_sort_copy = static_const<partial_sort_copy_fn>;
 
         constexpr auto const & lower_bound = static_const<lower_bound_fn>;
         constexpr auto const & upper_bound = static_const<upper_bound_fn>;

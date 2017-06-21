@@ -405,16 +405,20 @@ TEST_CASE("algorithm/push_heap")
 {
     using Input = std::vector<int>;
 
-    auto test_code = [](Input xs)
+    auto test_code = [](Input const & xs_old)
     {
-        CAPTURE(xs);
+        CAPTURE(xs_old);
+
+        auto xs = xs_old;
 
         REQUIRE((xs.empty() || std::is_heap(xs.begin(), xs.end() - 1)));
 
         ::sayan::push_heap(xs);
 
+        CAPTURE(xs);
         REQUIRE(::std::is_heap(xs.begin(), xs.end()));
         REQUIRE(::sayan::is_heap(xs));
+        REQUIRE(::sayan::is_permutation(xs, xs_old));
     };
 
     Input xs;
@@ -435,15 +439,19 @@ TEST_CASE("algorithm/push_heap: custom predicate")
 
     auto const cmp = ::std::greater<>{};
 
-    auto test_code = [=](Input xs)
+    auto test_code = [=](Input const & xs_old)
     {
-        CAPTURE(xs);
+        CAPTURE(xs_old);
+
+        auto xs = xs_old;
+
         REQUIRE((xs.empty() || std::is_heap(xs.begin(), xs.end() - 1, cmp)));
 
         ::sayan::push_heap(xs, cmp);
 
         REQUIRE(::std::is_heap(xs.begin(), xs.end(), cmp));
         REQUIRE(::sayan::is_heap(xs, cmp));
+        REQUIRE(::sayan::is_permutation(xs, xs_old));
     };
 
     Input xs;
@@ -462,9 +470,11 @@ TEST_CASE("algorithm/pop_heap")
 {
     using Input = std::vector<int>;
 
-    auto test_code = [](Input xs)
+    auto test_code = [](Input const & xs_old)
     {
-        CAPTURE(xs);
+        CAPTURE(xs_old);
+
+        auto xs = xs_old;
 
         REQUIRE(std::is_heap(xs.begin(), xs.end()));
 
@@ -481,6 +491,7 @@ TEST_CASE("algorithm/pop_heap")
             CAPTURE(xs);
             REQUIRE(xs.back() == old_top);
             REQUIRE((xs.empty() || ::std::is_heap(xs.begin(), xs.end() - 1)));
+            REQUIRE(::sayan::is_permutation(xs, xs_old));
         }
     };
 
@@ -500,9 +511,11 @@ TEST_CASE("algorithm/pop_heap: custom predicate")
     using Input = std::vector<int>;
     auto const cmp = ::std::greater<>{};
 
-    auto test_code = [=](Input xs)
+    auto test_code = [=](Input const & xs_old)
     {
-        CAPTURE(xs);
+        CAPTURE(xs_old);
+
+        auto xs = xs_old;
 
         REQUIRE(std::is_heap(xs.begin(), xs.end(), cmp));
 
@@ -518,6 +531,7 @@ TEST_CASE("algorithm/pop_heap: custom predicate")
 
             REQUIRE(xs.back() == old_top);
             REQUIRE((xs.empty() || ::std::is_heap(xs.begin(), xs.end() - 1, cmp)));
+            REQUIRE(::sayan::is_permutation(xs, xs_old));
         }
     };
 
@@ -536,14 +550,17 @@ TEST_CASE("algorithm/make_heap")
 {
     using Input = std::vector<int>;
 
-    auto test_code = [](Input xs)
+    auto test_code = [](Input const & xs_old)
     {
-        CAPTURE(xs);
+        CAPTURE(xs_old);
+
+        auto xs = xs_old;
 
         ::sayan::make_heap(xs);
 
         CAPTURE(xs);
         REQUIRE(::std::is_heap(xs.begin(), xs.end()));
+        REQUIRE(::sayan::is_permutation(xs, xs_old));
     };
 
     Input xs;
@@ -561,14 +578,17 @@ TEST_CASE("algorithm/make_heap: custom predicate")
     using Input = std::vector<int>;
     auto const cmp = ::std::greater<>{};
 
-    auto test_code = [=](Input xs)
+    auto test_code = [=](Input const & xs_old)
     {
-        CAPTURE(xs);
+        CAPTURE(xs_old);
+
+        auto xs = xs_old;
 
         ::sayan::make_heap(xs, cmp);
 
         CAPTURE(xs);
         REQUIRE(::std::is_heap(xs.begin(), xs.end(), cmp));
+        REQUIRE(::sayan::is_permutation(xs, xs_old));
     };
 
     Input xs;
@@ -585,14 +605,17 @@ TEST_CASE("algorithm/sort_heap")
 {
     using Input = std::vector<int>;
 
-    auto test_code = [=](Input xs)
+    auto test_code = [=](Input const & xs_old)
     {
-        CAPTURE(xs);
+        CAPTURE(xs_old);
+
+        auto xs = xs_old;
 
         ::sayan::sort_heap(xs);
 
         CAPTURE(xs);
         REQUIRE(::std::is_sorted(xs.begin(), xs.end()));
+        REQUIRE(::sayan::is_permutation(xs, xs_old));
     };
 
     Input xs;
@@ -611,14 +634,17 @@ TEST_CASE("algorithm/sort_heap: custom predicate")
     using Input = std::vector<int>;
     auto const cmp = ::std::greater<>{};
 
-    auto test_code = [=](Input xs)
+    auto test_code = [=](Input const & xs_old)
     {
-        CAPTURE(xs);
+        CAPTURE(xs_old);
+
+        auto xs = xs_old;
 
         ::sayan::sort_heap(xs, cmp);
 
         CAPTURE(xs);
         REQUIRE(::std::is_sorted(xs.begin(), xs.end(), cmp));
+        REQUIRE(::sayan::is_permutation(xs, xs_old));
     };
 
     Input xs;
@@ -629,5 +655,213 @@ TEST_CASE("algorithm/sort_heap: custom predicate")
         ::sayan::push_heap(xs, cmp);
 
         test_code(xs);
+    }
+}
+
+TEST_CASE("algorithm/partial_sort")
+{
+    using Input = std::vector<int>;
+
+    auto test_code = [](Input const & xs_old, int k)
+    {
+        CAPTURE(xs_old);
+        CAPTURE(k);
+        auto xs = xs_old;
+
+        auto const cur = sayan::next(::sayan::cursor(xs), k);
+        ::sayan::partial_sort(cur);
+
+        CAPTURE(xs);
+        REQUIRE(::sayan::is_sorted(cur.traversed(sayan::front)));
+        REQUIRE(::sayan::is_permutation(xs, xs_old));
+
+        if(k != 0)
+        {
+            auto const top = xs[k-1];
+
+            auto const pred = [=](int const & x) { return top <= x; };
+
+            REQUIRE(sayan::all_of(cur, pred));
+        }
+    };
+
+    Input xs;
+    test_code(xs, 0);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+        auto k = sayan::test::random_integral(0*xs.size(), xs.size());
+
+        test_code(xs, k);
+    }
+}
+
+TEST_CASE("algorithm/partial_sort: custom predicate")
+{
+    using Input = std::vector<int>;
+    auto const cmp = std::greater<>{};
+
+    auto test_code = [=](Input const & xs_old, int k)
+    {
+        CAPTURE(xs_old);
+        CAPTURE(k);
+        auto xs = xs_old;
+
+        auto const cur = sayan::next(::sayan::cursor(xs), k);
+        ::sayan::partial_sort(cur, cmp);
+
+        CAPTURE(xs);
+        REQUIRE(::sayan::is_sorted(cur.traversed(sayan::front), cmp));
+        REQUIRE(::sayan::is_permutation(xs, xs_old));
+
+        if(k != 0)
+        {
+            auto const top = xs[k-1];
+
+            auto const pred = [=](int const & x) { return !cmp(x, top); };
+
+            REQUIRE(sayan::all_of(cur, pred));
+        }
+    };
+
+    Input xs;
+    test_code(xs, 0);
+    for(auto n = 12; n > 0; -- n)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+        auto k = sayan::test::random_integral(0*xs.size(), xs.size());
+
+        test_code(xs, k);
+    }
+}
+
+TEST_CASE("algorithm/partial_sort_copy")
+{
+    for (auto T = 100; T > 0; --T)
+    {
+        auto const n_in = ::sayan::test::random_integral(0, 20);
+        auto const n_out = ::sayan::test::random_integral(0, 20);
+
+        auto src = ::sayan::test::get_arbitrary_container<std::string>(n_in);
+        auto dest = ::sayan::test::get_arbitrary_container<std::vector<char>>(n_out);
+
+        auto const src_old = src;
+        auto const dest_old = dest;
+
+        CAPTURE(src);
+        CAPTURE(dest);
+
+        auto const r = ::sayan::partial_sort_copy(src, dest);
+
+        CAPTURE(dest);
+
+        REQUIRE(src == src_old);
+
+        std::sort(src.begin(), src.end());
+
+        auto const n = std::min(src.size(), dest.size());
+
+        std::vector<char> z(src.begin(), src.begin()+n);
+        z.insert(z.end(), dest_old.begin() + n, dest_old.end());
+
+        REQUIRE(dest == z);
+        REQUIRE(sayan::size(r.second.traversed(sayan::front)) == n);
+        REQUIRE(::sayan::is_sorted(r.second.traversed(sayan::front)));
+
+        REQUIRE(r.first.traversed_begin() == src.begin());
+        REQUIRE(r.first.begin() == (dest.empty() ? src.begin() : src.end()));
+        REQUIRE(r.first.end() == src.end());
+        REQUIRE(r.first.traversed_end() == src.end());
+
+        REQUIRE(r.second.traversed_begin() == dest.begin());
+        REQUIRE(r.second.begin() == dest.begin() + n);
+        REQUIRE(r.second.end() == dest.end());
+        REQUIRE(r.second.traversed_end() == dest.end());
+    }
+}
+
+TEST_CASE("algorithm/partial_sort_copy: minimalistic, custom predicate")
+{
+    for (auto T = 100; T > 0; --T)
+    {
+        auto const cmp = std::greater<>{};
+
+        auto const n_in = ::sayan::test::random_integral(0, 20);
+        auto const n_out = ::sayan::test::random_integral(0, 20);
+
+        auto src = ::sayan::test::get_arbitrary_container<std::string>(n_in);
+        auto dest = ::sayan::test::get_arbitrary_container<std::string>(n_out);
+
+        auto const src_old = src;
+        auto const dest_old = dest;
+
+        CAPTURE(src);
+        CAPTURE(dest);
+
+        auto const r = ::sayan::partial_sort_copy(std::istringstream(src), dest, cmp);
+
+        CAPTURE(dest);
+
+        REQUIRE(src == src_old);
+
+        std::sort(src.begin(), src.end(), cmp);
+
+        auto const n = std::min(src.size(), dest.size());
+
+        auto const z = src.substr(0, n) + dest_old.substr(n, dest.size());
+
+        REQUIRE(dest == z);
+        REQUIRE(sayan::size(r.second.traversed(sayan::front)) == n);
+        REQUIRE(::sayan::is_sorted(r.second.traversed(sayan::front), cmp));
+        REQUIRE(r.second.traversed_begin() == dest.begin());
+        REQUIRE(r.second.begin() == dest.begin() + n);
+        REQUIRE(r.second.end() == dest.end());
+        REQUIRE(r.second.traversed_end() == dest.end());
+    }
+}
+
+TEST_CASE("algorithm/sort")
+{
+    for(auto T = 100; T > 0; -- T)
+    {
+        auto const n = ::sayan::test::random_integral(0, 20);
+
+        auto xs = ::sayan::test::get_arbitrary_container<std::vector<int>>(n);
+        auto const xs_old = xs;
+
+        CAPTURE(xs_old);
+
+        ::sayan::sort(xs);
+
+        CAPTURE(xs);
+        REQUIRE(std::is_sorted(xs.begin(), xs.end()));
+        REQUIRE(std::is_permutation(xs.begin(), xs.end(), xs_old.begin(), xs_old.end()));
+
+        REQUIRE(sayan::is_sorted(xs));
+        REQUIRE(sayan::is_permutation(xs, xs_old));
+    }
+}
+
+TEST_CASE("algorithm/sort: custom compare")
+{
+    for(auto T = 100; T > 0; -- T)
+    {
+        auto const cmp = std::greater<>{};
+
+        auto const n = ::sayan::test::random_integral(0, 20);
+
+        auto xs = ::sayan::test::get_arbitrary_container<std::vector<int>>(n);
+        auto const xs_old = xs;
+
+        CAPTURE(xs_old);
+
+        ::sayan::sort(xs, cmp);
+
+        CAPTURE(xs);
+        REQUIRE(std::is_sorted(xs.begin(), xs.end(), cmp));
+        REQUIRE(std::is_permutation(xs.begin(), xs.end(), xs_old.begin(), xs_old.end()));
+
+        REQUIRE(sayan::is_sorted(xs, cmp));
+        REQUIRE(sayan::is_permutation(xs, xs_old));
     }
 }

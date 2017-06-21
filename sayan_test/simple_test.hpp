@@ -37,6 +37,19 @@ namespace test
     {
         return arbitrary<T>::make();
     }
+
+    template <class Container>
+    Container get_arbitrary_container(typename Container::size_type n)
+    {
+        Container cs;
+
+        for(; n > 0; -- n)
+        {
+            cs.push_back(::sayan::test::get_arbitrary<typename Container::value_type>());
+        }
+
+        return cs;
+    }
 }
 // namespace test
 }

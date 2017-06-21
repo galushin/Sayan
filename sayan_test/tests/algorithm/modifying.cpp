@@ -88,20 +88,14 @@ TEST_CASE("algorithm/copy_n: minimalistic")
     auto const n1 = ::sayan::test::random_integral<size_t>(0, 20);
     auto const n = ::sayan::test::random_integral<size_t>(0, 2*n1);
 
-    std::string src;
-    for(auto m = n1; m > 0; -- m)
-    {
-        src.push_back(::sayan::test::get_arbitrary<char>());
-    }
-    auto const src_old = src;
+    auto const src_old = ::sayan::test::get_arbitrary_container<std::string>(n1);
 
     std::string dest;
-    ::sayan::copy_n(std::istringstream(src), n, ::sayan::back_inserter(dest));
+    ::sayan::copy_n(std::istringstream(src_old), n, ::sayan::back_inserter(dest));
 
-    auto const n_copied = std::min(src.size(), n);
+    auto const n_copied = std::min(src_old.size(), n);
 
-    CHECK(dest == src.substr(0, n_copied));
-    CHECK(src == src_old);
+    CHECK(dest == src_old.substr(0, n_copied));
 }
 
 TEST_CASE("algorithm/copy_n")
@@ -730,95 +724,99 @@ TEST_CASE("algorithm/remove_copy_if")
 TEST_CASE("algorithm/copy_backward")
 {
     std::list<int> src;
-    std::list<int> dest;
-
     for(auto n = 12; n > 0; -- n, src.push_back(sayan::test::get_arbitrary<int>()))
-    for(auto m = 12; m > 0; -- m, dest.push_back(sayan::test::get_arbitrary<int>()))
     {
-        CAPTURE(src);
-        CAPTURE(dest);
+        std::list<int> dest;
+        for(auto m = 12; m > 0; -- m, dest.push_back(sayan::test::get_arbitrary<int>()))
+        {
+            CAPTURE(src);
+            CAPTURE(dest);
 
-        auto dest_sayan = dest;
-        auto const r_sayan = sayan::copy_backward(src, dest_sayan);
+            auto dest_sayan = dest;
+            auto const r_sayan = sayan::copy_backward(src, dest_sayan);
 
-        auto dest_std = dest;
-        auto const N = std::min(dest_std.size(), src.size());
-        auto const r_std = std::copy_backward(std::prev(src.end(), N), src.end(), dest_std.end());
+            auto dest_std = dest;
+            auto const N = std::min(dest_std.size(), src.size());
+            auto const r_std = std::copy_backward(std::prev(src.end(), N), src.end(), dest_std.end());
 
-        REQUIRE(dest_sayan == dest_std);
+            REQUIRE(dest_sayan == dest_std);
 
-        REQUIRE(src.begin() == r_sayan.first.traversed_begin());
-        REQUIRE(r_sayan.first.begin() == src.begin());
-        REQUIRE(std::distance(src.begin(), r_sayan.first.end()) == src.size() - N);
-        REQUIRE(r_sayan.first.traversed_end() == src.end());
+            REQUIRE(src.begin() == r_sayan.first.traversed_begin());
+            REQUIRE(r_sayan.first.begin() == src.begin());
+            REQUIRE(std::distance(src.begin(), r_sayan.first.end()) == src.size() - N);
+            REQUIRE(r_sayan.first.traversed_end() == src.end());
 
-        REQUIRE(r_sayan.second.traversed_begin() == dest_sayan.begin());
-        REQUIRE(r_sayan.second.begin() == dest_sayan.begin());
-        REQUIRE(std::distance(r_sayan.second.end(), dest_sayan.end()) ==
-                std::distance(r_std, dest_std.end()));
-        REQUIRE(r_sayan.second.traversed_end() == dest_sayan.end());
+            REQUIRE(r_sayan.second.traversed_begin() == dest_sayan.begin());
+            REQUIRE(r_sayan.second.begin() == dest_sayan.begin());
+            REQUIRE(std::distance(r_sayan.second.end(), dest_sayan.end()) ==
+                    std::distance(r_std, dest_std.end()));
+            REQUIRE(r_sayan.second.traversed_end() == dest_sayan.end());
+        }
     }
 }
 
 TEST_CASE("algorithm/move_backward")
 {
     std::list<int> src;
-    std::list<int> dest;
-
     for(auto n = 12; n > 0; -- n, src.push_back(sayan::test::get_arbitrary<int>()))
-    for(auto m = 12; m > 0; -- m, dest.push_back(sayan::test::get_arbitrary<int>()))
     {
-        CAPTURE(src);
-        CAPTURE(dest);
-
-        auto src_v = src;
-        auto dest_v = dest;
-
-        // Запаковываем
-        std::list<std::unique_ptr<int>> dest_p;
-        for(auto const & x : dest)
+        std::list<int> dest;
+        for(auto m = 12; m > 0; -- m, dest.push_back(sayan::test::get_arbitrary<int>()))
         {
-            dest_p.emplace_back(std::make_unique<int>(x));
+            CAPTURE(src);
+            CAPTURE(dest);
+
+            auto src_v = src;
+            auto dest_v = dest;
+
+            // Запаковываем
+            std::list<std::unique_ptr<int>> dest_p;
+            for(auto const & x : dest)
+            {
+                dest_p.emplace_back(std::make_unique<int>(x));
+            }
+
+            std::list<std::unique_ptr<int>> src_p;
+            for(auto const & x : src)
+            {
+                src_p.emplace_back(std::make_unique<int>(x));
+            }
+
+            // Выполняем алгоритмы
+            auto const r_v = sayan::copy_backward(src_v, dest_v);
+
+            auto const r_p = ::sayan::move_backward(src_p, dest_p);
+
+            // Распаковываем
+            std::list<int> dest_unp;
+            for(auto const & p : dest_p)
+            {
+                REQUIRE(!!p);
+
+                dest_unp.emplace_back(*p);
+            }
+
+            // Проверяем
+            REQUIRE(dest_v == dest_unp);
+
+            auto const n = std::min(src_p.size(), dest_p.size());
+
+            REQUIRE(std::all_of(std::prev(src_p.end(), n), src_p.end(),
+                                [](std::unique_ptr<int> const & p) { return !p;}));
+
+            auto const N_min = std::min(src.size(), dest.size());
+
+            REQUIRE(r_p.first.traversed_begin() == src_p.begin());
+            REQUIRE(r_p.first.begin() == src_p.begin());
+            REQUIRE(std::distance(src_p.begin(), r_p.first.end()) == src.size() - N_min);
+            REQUIRE(r_p.first.traversed_end() == src_p.end());
+
+            REQUIRE(r_p.second.traversed_begin() == dest_p.begin());
+            REQUIRE(r_p.second.begin() == dest_p.begin());
+            REQUIRE(std::distance(r_p.second.end(), dest_p.end()) ==
+                    std::distance(r_v.second.end(), dest_v.end()));
+            REQUIRE(r_p.second.traversed_end() == dest_p.end());
         }
-
-        std::list<std::unique_ptr<int>> src_p;
-        for(auto const & x : src)
-        {
-            src_p.emplace_back(std::make_unique<int>(x));
-        }
-
-        // Выполняем алгоритмы
-        auto const r_v = sayan::copy_backward(src_v, dest_v);
-
-        auto const r_p = ::sayan::move_backward(src_p, dest_p);
-
-        // Распаковываем
-        std::list<int> dest_unp;
-        for(auto const & p : dest_p)
-        {
-            REQUIRE(!!p);
-
-            dest_unp.emplace_back(*p);
-        }
-
-        // Проверяем
-        REQUIRE(dest_v == dest_unp);
-
-        CHECK(std::all_of(src_p.begin(), src_p.end(),
-                          [](std::unique_ptr<int> const & p) { return !p;}));
-
-        auto const N_min = std::min(src.size(), dest.size());
-
-        REQUIRE(r_p.first.traversed_begin() == src_p.begin());
-        REQUIRE(r_p.first.begin() == src_p.begin());
-        REQUIRE(std::distance(src_p.begin(), r_p.first.end()) == src.size() - N_min);
-        REQUIRE(r_p.first.traversed_end() == src_p.end());
-
-        REQUIRE(r_p.second.traversed_begin() == dest_p.begin());
-        REQUIRE(r_p.second.begin() == dest_p.begin());
-        REQUIRE(std::distance(r_p.second.end(), dest_p.end()) ==
-                std::distance(r_v.second.end(), dest_v.end()));
-        REQUIRE(r_p.second.traversed_end() == dest_p.end());
     }
 }
 
@@ -1404,32 +1402,33 @@ TEST_CASE("algorithm/reverse_copy: minimal")
 TEST_CASE("algorithm/reverse_copy")
 {
     std::vector<int> src;
-    std::vector<int> dest;
-
     for(auto n = 12; n > 0; -- n, src.push_back(sayan::test::get_arbitrary<int>()))
-    for(auto m = 12; m > 0; -- m, dest.push_back(sayan::test::get_arbitrary<int>()))
     {
-        CAPTURE(src);
-        CAPTURE(dest);
+        std::vector<int> dest;
+        for(auto m = 12; m > 0; -- m, dest.push_back(sayan::test::get_arbitrary<int>()))
+        {
+            CAPTURE(src);
+            CAPTURE(dest);
 
-        std::vector<int> dest_sayan(dest);
-        auto const r_sayan = sayan::reverse_copy(src, dest_sayan);
+            std::vector<int> dest_sayan(dest);
+            auto const r_sayan = sayan::reverse_copy(src, dest_sayan);
 
-        std::vector<int> dest_std(dest);
-        auto const N = std::min(dest_std.size(), src.size());
-        auto const r_std = std::reverse_copy(src.end() - N, src.end(), dest_std.begin());
+            std::vector<int> dest_std(dest);
+            auto const N = std::min(dest_std.size(), src.size());
+            auto const r_std = std::reverse_copy(src.end() - N, src.end(), dest_std.begin());
 
-        REQUIRE(dest_sayan == dest_std);
+            REQUIRE(dest_sayan == dest_std);
 
-        REQUIRE((r_sayan.first.traversed_begin() - src.begin()) == 0);
-        REQUIRE((r_sayan.first.begin() - src.begin()) == 0);
-        REQUIRE((r_sayan.first.end() - src.begin()) == src.size() - N);
-        REQUIRE((r_sayan.first.traversed_end() - src.end()) == 0);
+            REQUIRE((r_sayan.first.traversed_begin() - src.begin()) == 0);
+            REQUIRE((r_sayan.first.begin() - src.begin()) == 0);
+            REQUIRE((r_sayan.first.end() - src.begin()) == src.size() - N);
+            REQUIRE((r_sayan.first.traversed_end() - src.end()) == 0);
 
-        REQUIRE((r_sayan.second.traversed_begin() - dest_sayan.begin()) == 0);
-        REQUIRE((r_sayan.second.begin() - dest_sayan.begin()) == r_std - dest_std.begin());
-        REQUIRE((r_sayan.second.end() - dest_sayan.end()) == 0);
-        REQUIRE((r_sayan.second.traversed_end() - dest_sayan.end()) == 0);
+            REQUIRE((r_sayan.second.traversed_begin() - dest_sayan.begin()) == 0);
+            REQUIRE((r_sayan.second.begin() - dest_sayan.begin()) == r_std - dest_std.begin());
+            REQUIRE((r_sayan.second.end() - dest_sayan.end()) == 0);
+            REQUIRE((r_sayan.second.traversed_end() - dest_sayan.end()) == 0);
+        }
     }
 }
 
