@@ -865,3 +865,171 @@ TEST_CASE("algorithm/sort: custom compare")
         REQUIRE(sayan::is_permutation(xs, xs_old));
     }
 }
+
+TEST_CASE("algorithm/nth_element")
+{
+    using Input = std::vector<int>;
+
+    auto test_code = [](Input const & xs_old, int k)
+    {
+        CAPTURE(xs_old);
+        CAPTURE(k);
+        auto xs = xs_old;
+
+        auto const cur = sayan::next(::sayan::cursor(xs), k);
+        ::sayan::nth_element(cur);
+
+        CAPTURE(xs);
+        REQUIRE(::sayan::is_permutation(xs, xs_old));
+
+        if(!xs.empty())
+        {
+            auto zs = xs;
+            std::sort(zs.begin(), zs.end());
+            CAPTURE(zs);
+
+            REQUIRE(std::is_permutation(xs.begin(), xs.begin() + k, zs.begin(), zs.begin() + k));
+
+            if(static_cast<size_t>(k) != xs.size())
+            {
+                REQUIRE(xs[k] == zs[k]);
+                REQUIRE(std::is_permutation(xs.begin() + k + 1, xs.end(), zs.begin() + k + 1, zs.end()));
+            }
+        }
+    };
+
+    Input xs;
+    test_code(xs, 0);
+    for(auto n = 12; n > 0; -- n)
+    for(auto k = 0*xs.size(); k != xs.size(); ++ k)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+
+        test_code(xs, k);
+    }
+}
+
+TEST_CASE("algorithm/nth_element: custom predicate")
+{
+    using Input = std::vector<int>;
+    auto const cmp = std::greater<>{};
+
+    auto test_code = [=](Input const & xs_old, int k)
+    {
+        CAPTURE(xs_old);
+        CAPTURE(k);
+        auto xs = xs_old;
+
+        auto const cur = sayan::next(::sayan::cursor(xs), k);
+        ::sayan::nth_element(cur, cmp);
+
+        CAPTURE(xs);
+        REQUIRE(::sayan::is_permutation(xs, xs_old));
+
+        if(!xs.empty())
+        {
+            auto zs = xs;
+            std::sort(zs.begin(), zs.end(), cmp);
+            CAPTURE(zs);
+
+            REQUIRE(std::is_permutation(xs.begin(), xs.begin() + k, zs.begin(), zs.begin() + k));
+
+            if(static_cast<size_t>(k) != xs.size())
+            {
+                REQUIRE(xs[k] == zs[k]);
+                REQUIRE(std::is_permutation(xs.begin() + k + 1, xs.end(), zs.begin() + k + 1, zs.end()));
+            }
+        }
+    };
+
+    Input xs;
+    test_code(xs, 0);
+    for(auto n = 12; n > 0; -- n)
+    for(auto k = 0*xs.size(); k != xs.size(); ++ k)
+    {
+        xs.push_back(sayan::test::get_arbitrary<int>());
+
+        test_code(xs, k);
+    }
+}
+
+TEST_CASE("algorithm/stable_sort: basic")
+{
+    for(auto T = 100; T > 0; -- T)
+    {
+        auto const n = ::sayan::test::random_integral(0, 20);
+
+        auto xs_sayan = ::sayan::test::get_arbitrary_container<std::vector<int>>(n);
+        auto xs_std = xs_sayan;
+
+        ::std::stable_sort(xs_std.begin(), xs_std.end());
+        ::sayan::stable_sort(xs_sayan);
+
+        REQUIRE(xs_sayan == xs_std);
+    }
+}
+
+namespace
+{
+    struct Wrapper
+    {
+        int value;
+
+        Wrapper(int x)
+         : value(x)
+        {}
+
+        friend bool operator==(Wrapper const & x, Wrapper const & y)
+        {
+            return x.value == y.value;
+        }
+
+        friend bool operator<(Wrapper const & x, Wrapper const & y)
+        {
+            return std::abs(x.value) < std::abs(y.value);
+        }
+
+        friend std::ostream & operator<<(std::ostream & os, Wrapper const & x)
+        {
+            return os << x.value;
+        }
+    };
+}
+
+TEST_CASE("algorithm/stable_sort")
+{
+    for(auto T = 100; T > 0; -- T)
+    {
+        std::vector<Wrapper> xs_sayan;
+        for(auto n = ::sayan::test::random_integral(0, 20); n > 0; -- n)
+        {
+            xs_sayan.emplace_back(::sayan::test::get_arbitrary<int>());
+        }
+        auto xs_std = xs_sayan;
+
+        ::sayan::stable_sort(xs_sayan);
+        ::std::stable_sort(xs_std.begin(), xs_std.end());
+
+        REQUIRE(xs_sayan == xs_std);
+    }
+}
+
+TEST_CASE("algorithm/stable_sort: custom compare")
+{
+    auto const cmp = [](auto const & x, auto const & y) { return std::abs(x) < std::abs(y); };
+
+    for(auto T = 100; T > 0; -- T)
+    {
+        auto const n = ::sayan::test::random_integral(0, 20);
+
+        auto xs_sayan = ::sayan::test::get_arbitrary_container<std::vector<int>>(n);
+        auto xs_std = xs_sayan;
+
+        CAPTURE(xs_std);
+
+        ::sayan::stable_sort(xs_sayan, cmp);
+        ::std::stable_sort(xs_std.begin(), xs_std.end(), cmp);
+
+        REQUIRE(xs_sayan == xs_std);
+    }
+}

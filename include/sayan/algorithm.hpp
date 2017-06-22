@@ -1277,7 +1277,7 @@ inline namespace v1
                 auto const n2_half = n2 / 2;
                 ::sayan::advance(c2, n2_half);
 
-                c1 = ::sayan::lower_bound_fn{}(c1, *c2, cmp);
+                c1 = ::sayan::upper_bound_fn{}(c1, *c2, cmp);
             }
 
             auto r = rotate_fn{}(cursor_from_parts(c1, c2.traversed(::sayan::front)));
@@ -1700,6 +1700,41 @@ inline namespace v1
         }
     };
 
+    struct stable_sort_fn
+    {
+        template <class RandomAccessSequence, class Compare = std::less<>>
+        void operator()(RandomAccessSequence && seq, Compare cmp = Compare{}) const
+        {
+            auto cur = ::sayan::cursor_fwd<RandomAccessSequence>(seq);
+            auto const n = ::sayan::size(cur);
+
+            if(n < 2)
+            {
+                return;
+            }
+
+            cur += n/2;
+
+            (*this)(cur.traversed(sayan::front), cmp);
+            (*this)(cur, cmp);
+            ::sayan::inplace_merge_fn{}(cur, cmp);
+        }
+    };
+
+    struct nth_element_fn
+    {
+        template <class RandomAccessCursor, class Compare = std::less<>>
+        void operator()(RandomAccessCursor cur, Compare cmp = Compare{}) const
+        {
+            if(!!cur)
+            {
+                ++ cur;
+            }
+
+            ::sayan::partial_sort_fn{}(std::move(cur), std::move(cmp));
+        }
+    };
+
     struct min_element_fn
     {
         template <class ForwardSequence, class Compare = std::less<>>
@@ -1914,6 +1949,8 @@ inline namespace v1
         constexpr auto const & is_sorted_until = static_const<is_sorted_until_fn>;
 
         constexpr auto const & sort = static_const<sort_fn>;
+        constexpr auto const & stable_sort = static_const<stable_sort_fn>;
+        constexpr auto const & nth_element = static_const<nth_element_fn>;
 
         constexpr auto const & partial_sort = static_const<partial_sort_fn>;
         constexpr auto const & partial_sort_copy = static_const<partial_sort_copy_fn>;
