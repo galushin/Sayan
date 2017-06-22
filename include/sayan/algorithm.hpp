@@ -1109,6 +1109,26 @@ inline namespace v1
         }
     };
 
+    struct shuffle_fn
+    {
+        template <class RandomAccessSequence, class URNG>
+        void operator()(RandomAccessSequence && seq, URNG && g) const
+        {
+            auto cur = ::sayan::cursor_fwd<RandomAccessSequence>(seq);
+
+            if(!cur)
+            {
+                return;
+            }
+
+            for(auto i = ::sayan::size(cur) - 1; i > 0; -- i)
+            {
+                std::uniform_int_distribution<decltype(i)> d(0*i, i);
+                ::sayan::cursor_swap(cur, cur, i, d(g));
+            }
+        }
+    };
+
     struct is_sorted_until_fn
     {
         template <class ForwardSequence, class Compare = std::less<>>
@@ -1944,6 +1964,8 @@ inline namespace v1
         constexpr auto const & partition_copy = static_const<partition_copy_fn>;
         constexpr auto const & partition_point = static_const<partition_point_fn>;
         constexpr auto const & stable_partition = static_const<stable_partition_fn>;
+
+        constexpr auto const & shuffle = static_const<shuffle_fn>;
 
         constexpr auto const & is_sorted = static_const<is_sorted_fn>;
         constexpr auto const & is_sorted_until = static_const<is_sorted_until_fn>;

@@ -1602,3 +1602,31 @@ TEST_CASE("algorithm/rotate_copy: to longer")
     CHECK((r.second.begin() - dest_sayan.begin()) == (r_std - dest_std.begin()));
     CHECK(r.second.end() == dest_sayan.end());
 }
+
+#include <random>
+
+TEST_CASE("algorithm/shuffle")
+{
+    for(auto T = 100; T > 0; -- T)
+    {
+        auto const n = ::sayan::test::random_integral(0, 20);
+
+        auto const xs_old = ::sayan::test::get_arbitrary_container<std::vector<int>>(n);
+        auto xs1 = xs_old;
+        auto xs2 = xs_old;
+
+        std::mt19937 rng1(n);
+        std::mt19937 rng2(n+1);
+
+        ::sayan::shuffle(xs1, rng1);
+        ::sayan::shuffle(xs2, rng2);
+
+        REQUIRE(::sayan::is_permutation(xs1, xs_old));
+        REQUIRE(::sayan::is_permutation(xs2, xs_old));
+
+        if(xs1.size() > 1)
+        {
+            REQUIRE(xs1 != xs2);
+        }
+    }
+}
