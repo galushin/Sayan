@@ -1,6 +1,6 @@
 #include <sayan/numeric.hpp>
 
-#include <sayan/cursor/back_inserter.hpp>
+#include <sayan/cursor/inserters.hpp>
 
 #include <forward_list>
 #include <numeric>

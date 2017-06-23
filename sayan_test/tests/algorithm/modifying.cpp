@@ -1,6 +1,6 @@
 #include <sayan/algorithm.hpp>
 
-#include <sayan/cursor/back_inserter.hpp>
+#include <sayan/cursor/inserters.hpp>
 
 #include <algorithm>
 

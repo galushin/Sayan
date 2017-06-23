@@ -71,7 +71,7 @@ TEST_CASE("is_based_on_istream_test")
 }
 
 #include <sayan/cursor/istream.hpp>
-#include <sayan/cursor/back_inserter.hpp>
+#include <sayan/cursor/inserters.hpp>
 #include <sayan/algorithm.hpp>
 
 TEST_CASE("istream_cursor")
