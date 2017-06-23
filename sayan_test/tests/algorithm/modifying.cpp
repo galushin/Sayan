@@ -1603,8 +1603,6 @@ TEST_CASE("algorithm/rotate_copy: to longer")
     CHECK(r.second.end() == dest_sayan.end());
 }
 
-#include <random>
-
 TEST_CASE("algorithm/shuffle")
 {
     for(auto T = 100; T > 0; -- T)

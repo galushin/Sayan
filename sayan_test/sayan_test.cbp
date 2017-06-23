@@ -37,9 +37,9 @@
 		</Compiler>
 		<Unit filename="../include/sayan/adl_tag.hpp" />
 		<Unit filename="../include/sayan/algorithm.hpp" />
-		<Unit filename="../include/sayan/cursor/back_inserter.hpp" />
 		<Unit filename="../include/sayan/cursor/check_policies.hpp" />
 		<Unit filename="../include/sayan/cursor/defs.hpp" />
+		<Unit filename="../include/sayan/cursor/inserters.hpp" />
 		<Unit filename="../include/sayan/cursor/istream.hpp" />
 		<Unit filename="../include/sayan/cursor/iterator_cursor.hpp" />
 		<Unit filename="../include/sayan/cursor/ostream.hpp" />

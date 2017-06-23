@@ -86,6 +86,56 @@ inline namespace v1
         using Cursor = istream_by_char_cursor<IStream>;
         return Cursor(std::forward<IStream>(is));
     }
+
+    template <class T, class IStream,
+              class Check = cursor_checking_throw>
+    class istream_cursor_type
+    {
+    public:
+        // Конструкторы
+        explicit istream_cursor_type(IStream && is)
+         : is_(std::forward<IStream>(is))
+         {
+             this->read();
+         }
+
+        // Курсор ввода
+        bool empty() const
+        {
+            return !this->is_;
+        }
+
+        T const &
+        operator[](front_fn) const
+        {
+            Check::ensure_not_empty(*this);
+
+            return this->reader_;
+        }
+
+        void drop(front_fn)
+        {
+            this->read();
+        }
+
+    private:
+        void read()
+        {
+            Check::ensure_not_empty(*this);
+
+            this->is_ >> this->reader_;
+        }
+
+        IStream is_;
+        T reader_;
+    };
+
+    template <class T, class IStream>
+    istream_cursor_type<T, IStream>
+    make_istream_cursor(IStream && is)
+    {
+        return istream_cursor_type<T, IStream>{std::forward<IStream>(is)};
+    }
 }
 // namespace v1
 }
