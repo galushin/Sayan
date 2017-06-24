@@ -60,6 +60,7 @@
 		<Unit filename="tests/algorithm/sorting.cpp" />
 		<Unit filename="tests/cursor/inserters.cpp" />
 		<Unit filename="tests/cursor/istream.cpp" />
+		<Unit filename="tests/cursor/operations.cpp" />
 		<Unit filename="tests/cursor/ostream.cpp" />
 		<Unit filename="tests/numeric/numeric_algo.cpp" />
 		<Extensions>
