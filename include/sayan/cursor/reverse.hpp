@@ -29,9 +29,16 @@ inline namespace v1
     template <class Cursor>
     class reverse_cursor
     {
+        friend reverse_cursor cursor_hook(reverse_cursor cur, adl_tag)
+        {
+            cur.base_ = ::sayan::cursor(std::move(cur.base_));
+            return cur;
+        }
+
     public:
         // Типы
-        using reference = typename Cursor::reference;
+        using reference = sayan::reference_t<Cursor>;
+        using difference_type = sayan::difference_type_t<Cursor>;
 
         // Создание
         explicit reverse_cursor(Cursor cur)
@@ -63,6 +70,40 @@ inline namespace v1
             return reverse_cursor(std::move(b));
         }
 
+        template <class F>
+        void forget(F f)
+        {
+            this->base_.forget(::sayan::details::reverse_index_fn{}(std::move(f)));
+        }
+
+        template <class F>
+        void exhaust(F f)
+        {
+            this->base_.exhaust(::sayan::details::reverse_index_fn{}(std::move(f)));
+        }
+
+        difference_type size() const
+        {
+            return this->base().size();
+        }
+
+        void splice(reverse_cursor other)
+        {
+            other.base_.splice(std::move(this->base_));
+            this->base_ = std::move(other.base_);
+        }
+
+        reference operator[](difference_type index) const
+        {
+            return this->base()[this->size() - index - 1];
+        }
+
+        template <class F>
+        void drop(F f, difference_type n)
+        {
+            this->base_.drop(::sayan::details::reverse_index_fn{}(std::move(f)), n);
+        }
+
         // Адаптор курсора
         Cursor const & base() const &
         {
@@ -80,6 +121,13 @@ inline namespace v1
         using R = reverse_cursor<cursor_type_t<BidirectionalSequence>>;
         return R{::sayan::cursor_fwd<BidirectionalSequence>(seq)};
 
+    }
+
+    template <class BidirectionalCursor>
+    BidirectionalCursor
+    make_reverse_cursor(reverse_cursor<BidirectionalCursor> const & cur)
+    {
+        return cur.base();
     }
 }
 // namespace v1

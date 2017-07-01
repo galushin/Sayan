@@ -2,9 +2,8 @@
 
 #include <sayan/algorithm.hpp>
 
-#include <catch/catch.hpp>
-
 #include "../../simple_test.hpp"
+#include <catch/catch.hpp>
 
 TEST_CASE("cursors/back_inserter")
 {

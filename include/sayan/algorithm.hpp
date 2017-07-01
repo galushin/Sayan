@@ -1280,8 +1280,8 @@ inline namespace v1
                 if(cmp(*c2, *c1))
                 {
                     ::sayan::cursor_swap(c2, c1);
-                    return;
                 }
+                return;
             }
 
             // Находим точки разбиения

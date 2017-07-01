@@ -13,7 +13,7 @@ namespace sayan
 {
 inline namespace v1
 {
-    template <class Range, class = std::enable_if_t<!is_cursor<Range>::value>>
+    template <class Range, class = std::enable_if_t<!is_input_cursor<Range>::value>>
     auto cursor_hook(Range && r, adl_tag)
     -> iterator_cursor_type<decltype(std::forward<Range>(r).begin()),
                             decltype(std::forward<Range>(r).end())>

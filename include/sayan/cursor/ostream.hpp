@@ -28,11 +28,17 @@ inline namespace v1
     /** @brief Курсор на основе потока вывода
     @tparam OStream тип потока вывода или ссылки на него
     @tparam Delimiter тип разделителя
+    @tparam Distance тип расстояния
     */
-    template <class OStream, class Delimiter = empty_delimiter>
+    template <class OStream,
+              class Delimiter = empty_delimiter,
+              class Distance = std::ptrdiff_t>
     class ostream_cursor_type
     {
     public:
+        /// @brief Тип расстояния
+        using difference_type = Distance;
+
         /** @brief Конструктор
         @param os поток, в который будет производится вывод
         @param delim разделитель, который будет помещаться между выводимыми

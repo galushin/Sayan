@@ -88,10 +88,14 @@ inline namespace v1
     }
 
     template <class T, class IStream,
-              class Check = cursor_checking_throw>
+              class Check = cursor_checking_throw,
+              class Distance = std::ptrdiff_t>
     class istream_cursor_type
     {
     public:
+        // Типы
+        using difference_type = Distance;
+
         // Конструкторы
         explicit istream_cursor_type(IStream && is)
          : is_(std::forward<IStream>(is))

@@ -17,6 +17,7 @@ inline namespace v1
         friend iterator_cursor_type cursor_hook(iterator_cursor_type cur, adl_tag)
         {
             cur.forget(sayan::front_fn{});
+            cur.forget(sayan::back_fn{});
 
             return cur;
         }
@@ -56,13 +57,6 @@ inline namespace v1
             Check::ensure_not_empty(*this);
 
             ++this->begin_.value();
-        }
-
-        void drop(sayan::front_fn, difference_type n)
-        {
-            Check::check_step(*this, n);
-
-            this->begin_.value() += n;
         }
 
         // Прямой курсор
@@ -109,12 +103,36 @@ inline namespace v1
             return iterator_cursor_type(this->end_.value(), this->end_.old_value());
         }
 
+        void forget(sayan::back_fn)
+        {
+            this->end_.commit();
+        }
+
+        void exhaust(sayan::back_fn)
+        {
+            this->end_.value() = this->begin_.value();
+        }
+
         // Курсор произвольного доступа
         reference operator[](difference_type index) const
         {
             Check::check_index(*this, index);
 
             return this->begin()[index];
+        }
+
+        void drop(sayan::front_fn, difference_type n)
+        {
+            Check::check_step(*this, n);
+
+            this->begin_.value() += n;
+        }
+
+        void drop(sayan::back_fn, difference_type n)
+        {
+            Check::check_step(*this, n);
+
+            this->end_.value() -= n;
         }
 
         difference_type size() const

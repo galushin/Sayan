@@ -46,6 +46,8 @@
 		<Unit filename="../include/sayan/cursor/reverse.hpp" />
 		<Unit filename="../include/sayan/cursor/sequence_to_cursor.hpp" />
 		<Unit filename="../include/sayan/numeric.hpp" />
+		<Unit filename="../include/sayan/type_traits.hpp" />
+		<Unit filename="../include/sayan/utility/as_const.hpp" />
 		<Unit filename="../include/sayan/utility/static_const.hpp" />
 		<Unit filename="../include/sayan/utility/with_old_value.hpp" />
 		<Unit filename="main.cpp" />
@@ -58,10 +60,12 @@
 		<Unit filename="tests/algorithm/permutations.cpp" />
 		<Unit filename="tests/algorithm/set_operations.cpp" />
 		<Unit filename="tests/algorithm/sorting.cpp" />
+		<Unit filename="tests/cursor/concepts_check.cpp" />
 		<Unit filename="tests/cursor/inserters.cpp" />
 		<Unit filename="tests/cursor/istream.cpp" />
 		<Unit filename="tests/cursor/operations.cpp" />
 		<Unit filename="tests/cursor/ostream.cpp" />
+		<Unit filename="tests/cursor/reversed.cpp" />
 		<Unit filename="tests/numeric/numeric_algo.cpp" />
 		<Extensions>
 			<code_completion />
