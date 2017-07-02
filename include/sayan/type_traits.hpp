@@ -103,6 +103,19 @@ namespace v1
     // Замена для возможностей из С++17
     template <class T>
     using add_const_t = typename ::std::add_const<T>::type;
+
+    template <class... Bs>
+    struct conjunction;
+
+    template <>
+    struct conjunction<>
+     : declare_type<std::true_type>
+    {};
+
+    template <class B1, class... Bs>
+    struct conjunction<B1, Bs...>
+     : std::conditional_t<B1::value == false, B1, conjunction<Bs...>>
+    {};
 }
 // namespace v1
 }

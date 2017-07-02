@@ -17,12 +17,14 @@ TEST_CASE("cursors/concepts")
     auto bidir    = ::sayan::cursor(bidir_src);
     auto ra       = ::sayan::cursor(ra_src);
 
+    // Курсор ввода
     static_assert(sayan::is_input_cursor<decltype(is)>::value, "");
     static_assert(!sayan::is_input_cursor<decltype(os)>::value, "");
     static_assert(sayan::is_input_cursor<decltype(fwd)>::value, "");
     static_assert(sayan::is_input_cursor<decltype(bidir)>::value, "");
     static_assert(sayan::is_input_cursor<decltype(ra)>::value, "");
 
+    // Курсор вывода
     static_assert(!sayan::is_output_cursor<decltype(is), int>::value, "");
     static_assert(sayan::is_output_cursor<decltype(os), int>::value, "");
     static_assert(sayan::is_output_cursor<decltype(fwd), int>::value, "");
@@ -33,7 +35,13 @@ TEST_CASE("cursors/concepts")
     static_assert(!sayan::is_output_cursor<decltype(bidir), void*>::value, "");
     static_assert(!sayan::is_output_cursor<decltype(ra), void*>::value, "");
 
-    // @todo Проверка ForwardCursor
+    // Прямой курсор
+    static_assert(!sayan::is_forward_cursor<decltype(is)>::value, "");
+    static_assert(!sayan::is_forward_cursor<decltype(os)>::value, "");
+    static_assert(sayan::is_forward_cursor<decltype(fwd)>::value, "");
+    static_assert(sayan::is_forward_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_forward_cursor<decltype(ra)>::value, "");
+
     // @todo Проверка BidirectionalCursor
     // @todo Проверка RandomAccessCursor
 }

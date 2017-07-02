@@ -58,20 +58,20 @@ inline namespace v1
         back_insert_cursor &
         operator<<(typename Container::value_type const & x)
         {
-            this->sink_.push_back(x);
+            this->sink_.get().push_back(x);
             return *this;
         }
 
         back_insert_cursor &
         operator<<(typename Container::value_type && x)
         {
-            this->sink_.push_back(std::move(x));
+            this->sink_.get().push_back(std::move(x));
             return *this;
         }
         //@}
 
     private:
-        Container & sink_;
+        std::reference_wrapper<Container> sink_;
     };
 
     /** @ingroup Cursors
@@ -118,20 +118,91 @@ inline namespace v1
         front_insert_cursor &
         operator<<(typename Container::value_type const & x)
         {
-            this->sink_.push_front(x);
+            this->sink_.get().push_front(x);
             return *this;
         }
 
         front_insert_cursor &
         operator<<(typename Container::value_type && x)
         {
-            this->sink_.push_front(std::move(x));
+            this->sink_.get().push_front(std::move(x));
             return *this;
         }
         //@}
 
     private:
-        Container & sink_;
+        std::reference_wrapper<Container> sink_;
+    };
+
+    /** @brief Курсор вывода для вставки в заданное место контейнера.
+    @tparam Container тип контейнера
+    */
+    template <class Container>
+    class insert_cursor
+    {
+        /** @brief Функция преобразования в курсор
+        @param cur курсор
+        @return @c cur
+        */
+        friend insert_cursor cursor_hook(insert_cursor cur, adl_tag)
+        {
+            return cur;
+        }
+
+    public:
+        // Типы
+        /// @brief Тип значения
+        using value_type = typename Container::value_type;
+
+        // Конструкторы
+        /** @brief Конструктор
+        @param c контейнер
+        @param pos итератор, перед которым должна осуществляться вставка.
+        @pre @c pos должен определять позицию внутри контейнера @c c.
+        */
+        constexpr insert_cursor(Container & c, typename Container::const_iterator pos)
+         : sink_(c)
+         , pos_(std::move(pos))
+        {}
+
+        // Курсор вывода
+        /** @brief Проверка исчерпания курсора
+        @return @b false
+        */
+        constexpr bool operator!() const
+        {
+            return false;
+        }
+
+        //@{
+        /** @brief Запись в курсор
+        @param value значение, которое будет выведено
+        @return <tt> *this </tt>
+        */
+        insert_cursor &
+        operator<<(value_type const & value)
+        {
+            return this->put(value);
+        }
+
+        insert_cursor &
+        operator<<(value_type && value)
+        {
+            return this->put(std::move(value));
+        }
+        //@}
+
+    private:
+        template <class T>
+        insert_cursor & put(T && x)
+        {
+            this->pos_ = this->sink_.get().insert(this->pos_, std::forward<T>(x));
+            ++ this->pos_;
+            return *this;
+        }
+
+        std::reference_wrapper<Container> sink_;
+        typename Container::const_iterator pos_;
     };
 
     /// @cond false
@@ -156,6 +227,16 @@ inline namespace v1
                 return ::sayan::front_insert_cursor<Container>(c);
             }
         };
+
+        struct inserter_fn
+        {
+            template <class Container>
+            constexpr ::sayan::insert_cursor<Container>
+            operator()(Container & c, typename Container::const_iterator pos) const
+            {
+                return ::sayan::insert_cursor<Container>(c, pos);
+            }
+        };
     }
     // namespace details
     /// @endcond
@@ -167,6 +248,9 @@ inline namespace v1
 
         /// @brief Функциональный объект для создания курсора вставки в начало контейнера.
         constexpr auto const & front_inserter = static_const<details::front_inserter_fn>;
+
+        /// @brief Функциональный объект для создания курсора вставки перед заданной позицией
+        constexpr auto const & inserter = static_const<details::inserter_fn>;
     }
 }
 // namespace v1

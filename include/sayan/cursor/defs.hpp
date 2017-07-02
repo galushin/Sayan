@@ -23,6 +23,10 @@ inline namespace v1
 
     namespace concepts
     {
+        template <class... Cs>
+        struct refines
+        {};
+
         /// @cond false
         namespace details
         {
@@ -30,6 +34,53 @@ inline namespace v1
             struct valid_types
              : declare_type<int>
             {};
+
+            // Проверка того, что "тело" концепции удовлетворено
+            template <class C, class... Args>
+            using is_body_satisfied_impl
+                = decltype(std::declval<C>().requires_(std::declval<Args>()...));
+
+            template <class Concept, class... Args>
+            using is_body_satisfied_t = is_detected<details::is_body_satisfied_impl, Concept, Args...>;
+
+            // Уточняемые концепции
+            struct get_refined
+            {
+                static refines<> get(void *);
+
+                template <class... Cs>
+                static refines<Cs...> get(refines<Cs...> *);
+            };
+
+            template <class T>
+            using refined_concepts_t = decltype(get_refined::get(static_cast<T*>(nullptr)));
+
+            // Проверка концепции целиком
+            template <class Concept, class... Args>
+            struct satisfied;
+
+            template <class ConceptList, class... Args>
+            struct is_refined_satisfied;
+
+            template <class... Cs, class... Args>
+            struct is_refined_satisfied<concepts::refines<Cs...>, Args...>
+             : ::sayan::conjunction<typename satisfied<Cs, Args...>::type...>
+            {};
+
+            template <class ConceptList, class... Args>
+            using is_refined_satisfied_t = typename is_refined_satisfied<ConceptList, Args...>::type;
+
+            template <class Concept, class... Args>
+            struct satisfied
+            {
+            private:
+                using Body_t = is_body_satisfied_t<Concept, Args...>;
+                using Refined = refined_concepts_t<Concept>;
+                using Bases_t = is_refined_satisfied_t<Refined, Args...>;
+
+            public:
+                using type = std::integral_constant<bool, Body_t::value && Bases_t::value>;
+            };
         }
         // namespace details
         /// @endcond
@@ -37,21 +88,19 @@ inline namespace v1
         template <class... Ts>
         using valid_types = details::valid_types<Ts...>;
 
-        template <class C, class... Args>
-        using is_body_satisfied_impl = decltype(std::declval<C>().requires(std::declval<Args>()...));
+        template <class Concept, class... Args>
+        struct satisfied
+         : details::satisfied<Concept, Args...>::type
+        {};
 
         template <class Concept, class... Args>
-        using is_body_satisfied_t = is_detected<is_body_satisfied_impl, Concept, Args...>;
-
-        // @todo поддержка уточнения концепций: refines
-        template <class Concept, class... Args>
-        using satisfied_t = is_body_satisfied_t<Concept, Args...>;
+        using satisfied_t = typename satisfied<Concept, Args...>::type;
 
         // @todo Выделить общую базовую концепцию
         struct OutputCursor
         {
             template <class T1, class T2>
-            auto requires(T1 && x, T2 && y)
+            auto requires_(T1 && x, T2 && y)
             -> valid_types<decltype(sayan::as_const(x).empty()),
                            decltype(x << std::forward<T2>(y)),
                            ::sayan::difference_type_t<std::decay_t<T1>>>;
@@ -60,14 +109,26 @@ inline namespace v1
         struct InputCursor
         {
             template <class T>
-            auto requires(T && x)
+            auto requires_(T && x)
             -> valid_types<decltype(sayan::as_const(x).empty()),
                            decltype(x[::sayan::front]),
                            decltype(x.drop(::sayan::front)),
                            ::sayan::difference_type_t<std::decay_t<T>>>;
         };
 
-        // @todo Определить ForwardCursor, BidirectionalCursor, RandomAccessCursor
+        struct ForwardCursor
+         : concepts::refines<InputCursor>
+        {
+            template <class T>
+            auto requires_(T && x)
+            -> valid_types<decltype(*x = *x),
+                           decltype(sayan::as_const(x).traversed(sayan::front_fn{})),
+                           decltype(x.exhaust(sayan::front_fn{})),
+                           decltype(x.forget(sayan::front_fn{})),
+                           decltype(x.splice(x))>;
+        };
+
+        // @todo Определить BidirectionalCursor, RandomAccessCursor
     }
     // namespace concepts
 
@@ -79,6 +140,11 @@ inline namespace v1
     template <class T>
     struct is_input_cursor
      : concepts::satisfied_t<concepts::InputCursor, T>
+    {};
+
+    template <class T>
+    struct is_forward_cursor
+     : concepts::satisfied_t<concepts::ForwardCursor, T>
     {};
 
     // @todo Уточнить

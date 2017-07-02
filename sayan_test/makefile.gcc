@@ -32,9 +32,9 @@ OBJDIR_RELEASE = ./obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = ./bin/Release/sayan_test
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/simple_test.o $(OBJDIR_DEBUG)/tests/algorithm/minmax.o $(OBJDIR_DEBUG)/tests/algorithm/modifying.o $(OBJDIR_DEBUG)/tests/algorithm/nonmodifying.o $(OBJDIR_DEBUG)/tests/algorithm/partitioning.o $(OBJDIR_DEBUG)/tests/algorithm/permutations.o $(OBJDIR_DEBUG)/tests/algorithm/set_operations.o $(OBJDIR_DEBUG)/tests/algorithm/sorting.o $(OBJDIR_DEBUG)/tests/cursor/concepts_check.o $(OBJDIR_DEBUG)/tests/cursor/inserters.o $(OBJDIR_DEBUG)/tests/cursor/istream.o $(OBJDIR_DEBUG)/tests/cursor/operations.o $(OBJDIR_DEBUG)/tests/cursor/ostream.o $(OBJDIR_DEBUG)/tests/cursor/reversed.o $(OBJDIR_DEBUG)/tests/numeric/numeric_algo.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/simple_test.o $(OBJDIR_DEBUG)/tests/algorithm/minmax.o $(OBJDIR_DEBUG)/tests/algorithm/modifying.o $(OBJDIR_DEBUG)/tests/algorithm/nonmodifying.o $(OBJDIR_DEBUG)/tests/algorithm/partitioning.o $(OBJDIR_DEBUG)/tests/algorithm/permutations.o $(OBJDIR_DEBUG)/tests/algorithm/set_operations.o $(OBJDIR_DEBUG)/tests/algorithm/sorting.o $(OBJDIR_DEBUG)/tests/cursor/concepts_check.o $(OBJDIR_DEBUG)/tests/cursor/inserters.o $(OBJDIR_DEBUG)/tests/cursor/istream.o $(OBJDIR_DEBUG)/tests/cursor/moved.o $(OBJDIR_DEBUG)/tests/cursor/operations.o $(OBJDIR_DEBUG)/tests/cursor/ostream.o $(OBJDIR_DEBUG)/tests/cursor/reversed.o $(OBJDIR_DEBUG)/tests/numeric/numeric_algo.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/simple_test.o $(OBJDIR_RELEASE)/tests/algorithm/minmax.o $(OBJDIR_RELEASE)/tests/algorithm/modifying.o $(OBJDIR_RELEASE)/tests/algorithm/nonmodifying.o $(OBJDIR_RELEASE)/tests/algorithm/partitioning.o $(OBJDIR_RELEASE)/tests/algorithm/permutations.o $(OBJDIR_RELEASE)/tests/algorithm/set_operations.o $(OBJDIR_RELEASE)/tests/algorithm/sorting.o $(OBJDIR_RELEASE)/tests/cursor/concepts_check.o $(OBJDIR_RELEASE)/tests/cursor/inserters.o $(OBJDIR_RELEASE)/tests/cursor/istream.o $(OBJDIR_RELEASE)/tests/cursor/operations.o $(OBJDIR_RELEASE)/tests/cursor/ostream.o $(OBJDIR_RELEASE)/tests/cursor/reversed.o $(OBJDIR_RELEASE)/tests/numeric/numeric_algo.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/simple_test.o $(OBJDIR_RELEASE)/tests/algorithm/minmax.o $(OBJDIR_RELEASE)/tests/algorithm/modifying.o $(OBJDIR_RELEASE)/tests/algorithm/nonmodifying.o $(OBJDIR_RELEASE)/tests/algorithm/partitioning.o $(OBJDIR_RELEASE)/tests/algorithm/permutations.o $(OBJDIR_RELEASE)/tests/algorithm/set_operations.o $(OBJDIR_RELEASE)/tests/algorithm/sorting.o $(OBJDIR_RELEASE)/tests/cursor/concepts_check.o $(OBJDIR_RELEASE)/tests/cursor/inserters.o $(OBJDIR_RELEASE)/tests/cursor/istream.o $(OBJDIR_RELEASE)/tests/cursor/moved.o $(OBJDIR_RELEASE)/tests/cursor/operations.o $(OBJDIR_RELEASE)/tests/cursor/ostream.o $(OBJDIR_RELEASE)/tests/cursor/reversed.o $(OBJDIR_RELEASE)/tests/numeric/numeric_algo.o
 
 all: debug release
 
@@ -89,6 +89,9 @@ $(OBJDIR_DEBUG)/tests/cursor/inserters.o: tests/cursor/inserters.cpp
 
 $(OBJDIR_DEBUG)/tests/cursor/istream.o: tests/cursor/istream.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tests/cursor/istream.cpp -o $(OBJDIR_DEBUG)/tests/cursor/istream.o
+
+$(OBJDIR_DEBUG)/tests/cursor/moved.o: tests/cursor/moved.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tests/cursor/moved.cpp -o $(OBJDIR_DEBUG)/tests/cursor/moved.o
 
 $(OBJDIR_DEBUG)/tests/cursor/operations.o: tests/cursor/operations.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c tests/cursor/operations.cpp -o $(OBJDIR_DEBUG)/tests/cursor/operations.o
@@ -159,6 +162,9 @@ $(OBJDIR_RELEASE)/tests/cursor/inserters.o: tests/cursor/inserters.cpp
 
 $(OBJDIR_RELEASE)/tests/cursor/istream.o: tests/cursor/istream.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tests/cursor/istream.cpp -o $(OBJDIR_RELEASE)/tests/cursor/istream.o
+
+$(OBJDIR_RELEASE)/tests/cursor/moved.o: tests/cursor/moved.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tests/cursor/moved.cpp -o $(OBJDIR_RELEASE)/tests/cursor/moved.o
 
 $(OBJDIR_RELEASE)/tests/cursor/operations.o: tests/cursor/operations.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c tests/cursor/operations.cpp -o $(OBJDIR_RELEASE)/tests/cursor/operations.o

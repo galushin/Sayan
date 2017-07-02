@@ -42,6 +42,7 @@
 		<Unit filename="../include/sayan/cursor/inserters.hpp" />
 		<Unit filename="../include/sayan/cursor/istream.hpp" />
 		<Unit filename="../include/sayan/cursor/iterator_cursor.hpp" />
+		<Unit filename="../include/sayan/cursor/move.hpp" />
 		<Unit filename="../include/sayan/cursor/ostream.hpp" />
 		<Unit filename="../include/sayan/cursor/reverse.hpp" />
 		<Unit filename="../include/sayan/cursor/sequence_to_cursor.hpp" />
@@ -63,6 +64,7 @@
 		<Unit filename="tests/cursor/concepts_check.cpp" />
 		<Unit filename="tests/cursor/inserters.cpp" />
 		<Unit filename="tests/cursor/istream.cpp" />
+		<Unit filename="tests/cursor/moved.cpp" />
 		<Unit filename="tests/cursor/operations.cpp" />
 		<Unit filename="tests/cursor/ostream.cpp" />
 		<Unit filename="tests/cursor/reversed.cpp" />

@@ -95,3 +95,107 @@ TEST_CASE("cursors/front_inserter: rvalue")
 
     CHECK(unptr == ns);
 }
+
+TEST_CASE("cursors/inserter: to list")
+{
+    for(auto T = 100; T > 0; -- T)
+    {
+        auto const src = sayan::test::get_arbitrary_container<std::vector<int>>(0, 20);
+
+        auto dest_std = sayan::test::get_arbitrary_container<std::list<int>>(0, 20);
+        auto dest_sayan = dest_std;
+
+        auto const k = sayan::test::random_integral<size_t>(0*dest_std.size(), dest_std.size());
+        auto out_std = std::inserter(dest_std, std::next(dest_std.begin(), k));
+        auto out_sayan = sayan::inserter(dest_sayan, std::next(dest_sayan.begin(), k));
+
+        std::copy(src.begin(), src.end(), out_std);
+        sayan::copy(src, out_sayan);
+
+        REQUIRE(dest_sayan == dest_std);
+    }
+}
+
+TEST_CASE("cursors/inserter: to list, rvalue")
+{
+    using Value = sayan::test::move_only<int>;
+    for(auto T = 100; T > 0; -- T)
+    {
+        auto src_std = sayan::test::get_arbitrary_container<std::vector<Value>>(0, 20);
+
+        std::vector<Value> src_sayan;
+        for(auto const & x : src_std)
+        {
+            src_sayan.emplace_back(x.value());
+        }
+
+        auto dest_std = sayan::test::get_arbitrary_container<std::list<Value>>(0, 20);
+
+        std::list<Value> dest_sayan;
+        for(auto const & x : dest_std)
+        {
+            dest_sayan.emplace_back(x.value());
+        }
+
+        auto const k = sayan::test::random_integral<size_t>(0*dest_std.size(), dest_std.size());
+        auto out_std = std::inserter(dest_std, std::next(dest_std.begin(), k));
+        auto out_sayan = sayan::inserter(dest_sayan, std::next(dest_sayan.begin(), k));
+
+        std::move(src_std.begin(), src_std.end(), out_std);
+        sayan::move(src_sayan, out_sayan);
+
+        REQUIRE(dest_sayan == dest_std);
+    }
+}
+
+TEST_CASE("cursors/inserter: to set")
+{
+    for(auto T = 100; T > 0; -- T)
+    {
+        auto const src = sayan::test::get_arbitrary_container<std::vector<int>>(0, 20);
+
+        auto dest_std = sayan::test::get_arbitrary_container<std::set<int>>(0, 20);
+        auto dest_sayan = dest_std;
+
+        auto const k = sayan::test::random_integral<size_t>(0*dest_std.size(), dest_std.size());
+        auto out_std = std::inserter(dest_std, std::next(dest_std.begin(), k));
+        auto out_sayan = sayan::inserter(dest_sayan, std::next(dest_sayan.begin(), k));
+
+        std::copy(src.begin(), src.end(), out_std);
+        sayan::copy(src, out_sayan);
+
+        REQUIRE(dest_sayan == dest_std);
+    }
+}
+
+TEST_CASE("cursors/inserter: to set, rvalue")
+{
+    using Value = sayan::test::move_only<int>;
+    for(auto T = 100; T > 0; -- T)
+    {
+        auto src_std = sayan::test::get_arbitrary_container<std::vector<Value>>(0, 20);
+
+        std::vector<Value> src_sayan;
+        for(auto const & x : src_std)
+        {
+            src_sayan.emplace_back(x.value());
+        }
+
+        auto dest_std = sayan::test::get_arbitrary_container<std::set<Value>>(0, 20);
+
+        std::set<Value> dest_sayan;
+        for(auto const & x : dest_std)
+        {
+            dest_sayan.emplace(x.value());
+        }
+
+        auto const k = sayan::test::random_integral<size_t>(0*dest_std.size(), dest_std.size());
+        auto out_std = std::inserter(dest_std, std::next(dest_std.begin(), k));
+        auto out_sayan = sayan::inserter(dest_sayan, std::next(dest_sayan.begin(), k));
+
+        std::move(src_std.begin(), src_std.end(), out_std);
+        sayan::move(src_sayan, out_sayan);
+
+        REQUIRE(dest_sayan == dest_std);
+    }
+}
