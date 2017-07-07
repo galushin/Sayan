@@ -42,6 +42,57 @@ TEST_CASE("cursors/concepts")
     static_assert(sayan::is_forward_cursor<decltype(bidir)>::value, "");
     static_assert(sayan::is_forward_cursor<decltype(ra)>::value, "");
 
-    // @todo Проверка BidirectionalCursor
-    // @todo Проверка RandomAccessCursor
+    // Двунаправленный курсор
+    static_assert(!sayan::is_bidirectional_cursor<decltype(is)>::value, "");
+    static_assert(!sayan::is_bidirectional_cursor<decltype(os)>::value, "");
+    static_assert(!sayan::is_bidirectional_cursor<decltype(fwd)>::value, "");
+    static_assert(sayan::is_bidirectional_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_bidirectional_cursor<decltype(ra)>::value, "");
+
+    // Курсор произвольного доступа
+    static_assert(!sayan::is_random_access_cursor<decltype(is)>::value, "");
+    static_assert(!sayan::is_random_access_cursor<decltype(os)>::value, "");
+    static_assert(!sayan::is_random_access_cursor<decltype(fwd)>::value, "");
+    static_assert(!sayan::is_random_access_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_random_access_cursor<decltype(ra)>::value, "");
+}
+
+TEST_CASE("cursors/concepts: const containers")
+{
+    std::forward_list<int> const fwd_src;
+    std::list<int> const bidir_src;
+    std::vector<int> const ra_src;
+
+    auto fwd      = ::sayan::cursor(fwd_src);
+    auto bidir    = ::sayan::cursor(bidir_src);
+    auto ra       = ::sayan::cursor(ra_src);
+
+    // Курсор ввода
+    static_assert(sayan::is_input_cursor<decltype(fwd)>::value, "");
+    static_assert(sayan::is_input_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_input_cursor<decltype(ra)>::value, "");
+
+    // Курсор вывода
+    static_assert(!sayan::is_output_cursor<decltype(fwd), int>::value, "");
+    static_assert(!sayan::is_output_cursor<decltype(bidir), int>::value, "");
+    static_assert(!sayan::is_output_cursor<decltype(ra), int>::value, "");
+
+    static_assert(!sayan::is_output_cursor<decltype(fwd), void*>::value, "");
+    static_assert(!sayan::is_output_cursor<decltype(bidir), void*>::value, "");
+    static_assert(!sayan::is_output_cursor<decltype(ra), void*>::value, "");
+
+    // Прямой курсор
+    static_assert(sayan::is_forward_cursor<decltype(fwd)>::value, "");
+    static_assert(sayan::is_forward_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_forward_cursor<decltype(ra)>::value, "");
+
+    // Двунаправленный курсор
+    static_assert(!sayan::is_bidirectional_cursor<decltype(fwd)>::value, "");
+    static_assert(sayan::is_bidirectional_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_bidirectional_cursor<decltype(ra)>::value, "");
+
+    // Курсор произвольного доступа
+    static_assert(!sayan::is_random_access_cursor<decltype(fwd)>::value, "");
+    static_assert(!sayan::is_random_access_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_random_access_cursor<decltype(ra)>::value, "");
 }

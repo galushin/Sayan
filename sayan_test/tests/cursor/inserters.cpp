@@ -5,6 +5,19 @@
 #include "../../simple_test.hpp"
 #include <catch/catch.hpp>
 
+TEST_CASE("cursors/back_inserter: concept check")
+{
+    std::string dest;
+    auto cur = sayan::back_inserter(dest);
+
+    static_assert(sayan::is_output_cursor<decltype(cur), char>::value, "");
+    static_assert(!sayan::is_output_cursor<decltype(cur), void*>::value, "");
+    static_assert(!sayan::is_input_cursor<decltype(cur)>::value, "");
+    static_assert(!sayan::is_forward_cursor<decltype(cur)>::value, "");
+    static_assert(!sayan::is_bidirectional_cursor<decltype(cur)>::value, "");
+    static_assert(!sayan::is_random_access_cursor<decltype(cur)>::value, "");
+}
+
 TEST_CASE("cursors/back_inserter")
 {
     std::string src;
@@ -43,6 +56,19 @@ TEST_CASE("cursors/back_inserter: rvalue")
     }
 
     CHECK(unptr == ns);
+}
+
+TEST_CASE("cursors/front_inserter: concept check")
+{
+    std::list<int> dest;
+    auto cur = sayan::front_inserter(dest);
+
+    static_assert(sayan::is_output_cursor<decltype(cur), int>::value, "");
+    static_assert(!sayan::is_output_cursor<decltype(cur), void*>::value, "");
+    static_assert(!sayan::is_input_cursor<decltype(cur)>::value, "");
+    static_assert(!sayan::is_forward_cursor<decltype(cur)>::value, "");
+    static_assert(!sayan::is_bidirectional_cursor<decltype(cur)>::value, "");
+    static_assert(!sayan::is_random_access_cursor<decltype(cur)>::value, "");
 }
 
 TEST_CASE("cursors/front_inserter")
@@ -94,6 +120,19 @@ TEST_CASE("cursors/front_inserter: rvalue")
     std::reverse(unptr.begin(), unptr.end());
 
     CHECK(unptr == ns);
+}
+
+TEST_CASE("cursors/inserter: concept check")
+{
+    std::list<int> dest;
+    auto cur = sayan::inserter(dest, dest.begin());
+
+    static_assert(sayan::is_output_cursor<decltype(cur), int>::value, "");
+    static_assert(!sayan::is_output_cursor<decltype(cur), void*>::value, "");
+    static_assert(!sayan::is_input_cursor<decltype(cur)>::value, "");
+    static_assert(!sayan::is_forward_cursor<decltype(cur)>::value, "");
+    static_assert(!sayan::is_bidirectional_cursor<decltype(cur)>::value, "");
+    static_assert(!sayan::is_random_access_cursor<decltype(cur)>::value, "");
 }
 
 TEST_CASE("cursors/inserter: to list")

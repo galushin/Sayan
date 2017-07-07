@@ -9,6 +9,11 @@ namespace sayan
 {
 inline namespace v1
 {
+    /** @brief Курсор, заданный парой итераторов.
+    @tparam Iterator тип итератора
+    @tparam Sentinel тип ограничителя
+    @tparam Chech стратегия проверки ошибок
+    */
     template <class Iterator,
               class Sentinel = Iterator,
               class Check = cursor_checking_throw>
@@ -16,8 +21,7 @@ inline namespace v1
     {
         friend iterator_cursor_type cursor_hook(iterator_cursor_type cur, adl_tag)
         {
-            cur.forget(sayan::front_fn{});
-            cur.forget(sayan::back_fn{});
+            cur.forget_all(typename std::iterator_traits<Iterator>::iterator_category{});
 
             return cur;
         }
@@ -38,6 +42,27 @@ inline namespace v1
          : begin_(std::move(first))
          , end_(std::move(last))
         {}
+
+        // Итераторы
+        Iterator begin() const
+        {
+            return this->begin_.value();
+        }
+
+        Sentinel end() const
+        {
+            return this->end_.value();
+        }
+
+        Iterator traversed_begin() const
+        {
+            return this->begin_.old_value();
+        }
+
+        Sentinel traversed_end() const
+        {
+            return this->end_.old_value();
+        }
 
         // Однопроходный курсор
         bool empty() const
@@ -60,21 +85,25 @@ inline namespace v1
         }
 
         // Прямой курсор
+        template <class = std::enable_if_t<sayan::is_forward_iterator<Iterator>::value>>
         iterator_cursor_type traversed(sayan::front_fn) const
         {
             return iterator_cursor_type(this->begin_.old_value(), this->begin_.value());
         }
 
+        template <class = std::enable_if_t<sayan::is_forward_iterator<Iterator>::value>>
         void forget(sayan::front_fn)
         {
             this->begin_.commit();
         }
 
+        template <class = std::enable_if_t<sayan::is_forward_iterator<Iterator>::value>>
         void exhaust(sayan::front_fn)
         {
             this->begin_.value() = this->end_.value();
         }
 
+        template <class = std::enable_if_t<sayan::is_forward_iterator<Iterator>::value>>
         void splice(iterator_cursor_type other)
         {
             Check::ensure_equal(other.begin_.value(), this->end_.value());
@@ -82,6 +111,7 @@ inline namespace v1
         }
 
         // Двунаправленный курсор
+        template <class = std::enable_if_t<sayan::is_bidirectional_iterator<Iterator>::value>>
         reference operator[](sayan::back_fn) const
         {
             Check::ensure_not_empty(*this);
@@ -91,6 +121,7 @@ inline namespace v1
             return *i;
         }
 
+        template <class = std::enable_if_t<sayan::is_bidirectional_iterator<Iterator>::value>>
         void drop(sayan::back_fn)
         {
             Check::ensure_not_empty(*this);
@@ -98,22 +129,26 @@ inline namespace v1
             --this->end_.value();
         }
 
+        template <class = std::enable_if_t<sayan::is_bidirectional_iterator<Iterator>::value>>
         iterator_cursor_type traversed(sayan::back_fn) const
         {
             return iterator_cursor_type(this->end_.value(), this->end_.old_value());
         }
 
+        template <class = std::enable_if_t<sayan::is_bidirectional_iterator<Iterator>::value>>
         void forget(sayan::back_fn)
         {
             this->end_.commit();
         }
 
+        template <class = std::enable_if_t<sayan::is_bidirectional_iterator<Iterator>::value>>
         void exhaust(sayan::back_fn)
         {
             this->end_.value() = this->begin_.value();
         }
 
         // Курсор произвольного доступа
+        template <class = std::enable_if_t<sayan::is_random_access_iterator<Iterator>::value>>
         reference operator[](difference_type index) const
         {
             Check::check_index(*this, index);
@@ -121,6 +156,7 @@ inline namespace v1
             return this->begin()[index];
         }
 
+        template <class = std::enable_if_t<sayan::is_random_access_iterator<Iterator>::value>>
         void drop(sayan::front_fn, difference_type n)
         {
             Check::check_step(*this, n);
@@ -128,6 +164,7 @@ inline namespace v1
             this->begin_.value() += n;
         }
 
+        template <class = std::enable_if_t<sayan::is_random_access_iterator<Iterator>::value>>
         void drop(sayan::back_fn, difference_type n)
         {
             Check::check_step(*this, n);
@@ -135,30 +172,25 @@ inline namespace v1
             this->end_.value() -= n;
         }
 
+        template <class = std::enable_if_t<sayan::is_random_access_iterator<Iterator>::value>>
         difference_type size() const
         {
             return this->end() - this->begin();
         }
 
-        // Итераторы
-        Iterator begin() const
+    private:
+         void forget_all(std::input_iterator_tag)
+        {}
+
+        void forget_all(std::forward_iterator_tag)
         {
-            return this->begin_.value();
+            this->forget(sayan::front);
         }
 
-        Sentinel end() const
+        void forget_all(std::bidirectional_iterator_tag)
         {
-            return this->end_.value();
-        }
-
-        Iterator traversed_begin() const
-        {
-            return this->begin_.old_value();
-        }
-
-        Sentinel traversed_end() const
-        {
-            return this->end_.old_value();
+            this->forget(sayan::front);
+            this->forget(sayan::back);
         }
 
     private:

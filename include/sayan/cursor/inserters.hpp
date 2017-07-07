@@ -5,6 +5,7 @@
  @brief Курсор вывода, добавляющий значение в конец заданного контейнера.
 */
 
+#include <sayan/type_traits.hpp>
 #include <sayan/adl_tag.hpp>
 #include <sayan/utility/static_const.hpp>
 
@@ -31,6 +32,10 @@ inline namespace v1
         }
 
     public:
+        // Типы
+        /// @brief Тип расстояния
+        using difference_type = sayan::difference_type_t<Container>;
+
         // Создание
         /** @brief Конструктор
         @param sink контейнер, в который будет осуществляться вставка
@@ -91,6 +96,10 @@ inline namespace v1
         }
 
     public:
+        // Типы
+        /// @brief Тип расстояния
+        using difference_type = sayan::difference_type_t<Container>;
+
         // Создание
         /** @brief Конструктор
         @param sink контейнер, в который будет осуществляться вставка
@@ -153,6 +162,9 @@ inline namespace v1
         // Типы
         /// @brief Тип значения
         using value_type = typename Container::value_type;
+
+        /// @brief Тип расстояния
+        using difference_type = sayan::difference_type_t<Container>;
 
         // Конструкторы
         /** @brief Конструктор

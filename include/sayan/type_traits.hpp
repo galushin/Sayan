@@ -6,6 +6,7 @@
 */
 
 #include <type_traits>
+#include <iterator>
 
 namespace sayan
 {
@@ -100,6 +101,26 @@ namespace v1
     template <class T, class... Others>
     using declare_first_type_t = typename declare_first_type<T, Others...>::type;
 
+    template <class T, class Category>
+    struct has_iterator_category
+     : std::is_convertible<typename std::iterator_traits<T>::iterator_category, Category>
+    {};
+
+    template <class T>
+    struct is_forward_iterator
+     : has_iterator_category<T, std::forward_iterator_tag>
+    {};
+
+    template <class T>
+    struct is_bidirectional_iterator
+     : has_iterator_category<T, std::bidirectional_iterator_tag>
+    {};
+
+    template <class T>
+    struct is_random_access_iterator
+     : has_iterator_category<T, std::random_access_iterator_tag>
+    {};
+
     // Замена для возможностей из С++17
     template <class T>
     using add_const_t = typename ::std::add_const<T>::type;
@@ -110,6 +131,11 @@ namespace v1
     template <>
     struct conjunction<>
      : declare_type<std::true_type>
+    {};
+
+    template <class B1>
+    struct conjunction<B1>
+     : B1
     {};
 
     template <class B1, class... Bs>

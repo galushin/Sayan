@@ -85,6 +85,7 @@ inline namespace v1
         // namespace details
         /// @endcond
 
+        // Общие механизмы
         template <class... Ts>
         using valid_types = details::valid_types<Ts...>;
 
@@ -96,12 +97,12 @@ inline namespace v1
         template <class Concept, class... Args>
         using satisfied_t = typename satisfied<Concept, Args...>::type;
 
-        // @todo Выделить общую базовую концепцию
+        // Конкретные концепции
         struct OutputCursor
         {
             template <class T1, class T2>
             auto requires_(T1 && x, T2 && y)
-            -> valid_types<decltype(sayan::as_const(x).empty()),
+            -> valid_types<decltype(!sayan::as_const(x)),
                            decltype(x << std::forward<T2>(y)),
                            ::sayan::difference_type_t<std::decay_t<T1>>>;
         };
@@ -111,8 +112,8 @@ inline namespace v1
             template <class T>
             auto requires_(T && x)
             -> valid_types<decltype(sayan::as_const(x).empty()),
-                           decltype(x[::sayan::front]),
-                           decltype(x.drop(::sayan::front)),
+                           decltype(sayan::as_const(x)[::sayan::front_fn{}]),
+                           decltype(x.drop(::sayan::front_fn{})),
                            ::sayan::difference_type_t<std::decay_t<T>>>;
         };
 
@@ -121,14 +122,35 @@ inline namespace v1
         {
             template <class T>
             auto requires_(T && x)
-            -> valid_types<decltype(*x = *x),
-                           decltype(sayan::as_const(x).traversed(sayan::front_fn{})),
+            -> valid_types<decltype(sayan::as_const(x).traversed(sayan::front_fn{})),
                            decltype(x.exhaust(sayan::front_fn{})),
                            decltype(x.forget(sayan::front_fn{})),
                            decltype(x.splice(x))>;
         };
 
-        // @todo Определить BidirectionalCursor, RandomAccessCursor
+        struct BidirectionalCursor
+         : refines<ForwardCursor>
+        {
+            template <class T>
+            auto requires_(T && x)
+            -> valid_types<decltype(sayan::as_const(x)[::sayan::back_fn{}]),
+                           decltype(x.drop(::sayan::back_fn{})),
+                           decltype(sayan::as_const(x).traversed(sayan::back_fn{})),
+                           decltype(x.exhaust(sayan::back_fn{})),
+                           decltype(x.forget(sayan::back_fn{}))>;
+
+        };
+
+        struct RandomAccessCursor
+         : refines<BidirectionalCursor>
+        {
+            template <class T>
+            auto requires_(T && x)
+            -> valid_types<decltype(sayan::as_const(x).size()),
+                           decltype(sayan::as_const(x)[x.size()]),
+                           decltype(x.drop(sayan::front, x.size())),
+                           decltype(x.drop(sayan::back, x.size()))>;
+        };
     }
     // namespace concepts
 
@@ -147,13 +169,16 @@ inline namespace v1
      : concepts::satisfied_t<concepts::ForwardCursor, T>
     {};
 
-    // @todo Уточнить
     template <class T>
-    struct is_random_access_cursor
-     : is_input_cursor<T>
+    struct is_bidirectional_cursor
+     : concepts::satisfied_t<concepts::BidirectionalCursor, T>
     {};
 
-    // @todo Не определять "лишние" функции в курсорах
+    template <class T>
+    struct is_random_access_cursor
+     : concepts::satisfied_t<concepts::RandomAccessCursor, T>
+    {};
+
     template <class Cursor, class = std::enable_if_t<is_input_cursor<Cursor>::value>>
     auto operator*(Cursor const & cur)
     -> decltype(cur[::sayan::front])

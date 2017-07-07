@@ -7,6 +7,70 @@
 #include "../../simple_test.hpp"
 #include <catch/catch.hpp>
 
+TEST_CASE("cursor/reverse: concept checks for concept check")
+{
+    std::list<int> bidir_src;
+    std::vector<int> ra_src;
+
+    auto bidir    = ::sayan::cursor(bidir_src);
+    auto ra       = ::sayan::cursor(ra_src);
+
+    // Курсор ввода
+    static_assert(sayan::is_input_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_input_cursor<decltype(ra)>::value, "");
+
+    // Курсор вывода
+    static_assert(sayan::is_output_cursor<decltype(bidir), int>::value, "");
+    static_assert(sayan::is_output_cursor<decltype(ra), int>::value, "");
+
+    static_assert(!sayan::is_output_cursor<decltype(bidir), void*>::value, "");
+    static_assert(!sayan::is_output_cursor<decltype(ra), void*>::value, "");
+
+    // Прямой курсор
+    static_assert(sayan::is_forward_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_forward_cursor<decltype(ra)>::value, "");
+
+    // Двунаправленный курсор
+    static_assert(sayan::is_bidirectional_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_bidirectional_cursor<decltype(ra)>::value, "");
+
+    // Курсор произвольного доступа
+    static_assert(!sayan::is_random_access_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_random_access_cursor<decltype(ra)>::value, "");
+}
+
+TEST_CASE("cursors/reverse: concept checks for const containers")
+{
+    std::list<int> const bidir_src;
+    std::vector<int> const ra_src;
+
+    auto bidir    = ::sayan::cursor(bidir_src);
+    auto ra       = ::sayan::cursor(ra_src);
+
+    // Курсор ввода
+    static_assert(sayan::is_input_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_input_cursor<decltype(ra)>::value, "");
+
+    // Курсор вывода
+    static_assert(!sayan::is_output_cursor<decltype(bidir), int>::value, "");
+    static_assert(!sayan::is_output_cursor<decltype(ra), int>::value, "");
+
+    static_assert(!sayan::is_output_cursor<decltype(bidir), void*>::value, "");
+    static_assert(!sayan::is_output_cursor<decltype(ra), void*>::value, "");
+
+    // Прямой курсор
+    static_assert(sayan::is_forward_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_forward_cursor<decltype(ra)>::value, "");
+
+    // Двунаправленный курсор
+    static_assert(sayan::is_bidirectional_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_bidirectional_cursor<decltype(ra)>::value, "");
+
+    // Курсор произвольного доступа
+    static_assert(!sayan::is_random_access_cursor<decltype(bidir)>::value, "");
+    static_assert(sayan::is_random_access_cursor<decltype(ra)>::value, "");
+}
+
 TEST_CASE("cursor/reverse: double reverse is identity")
 {
     auto const n = sayan::test::random_integral<size_t>(0, 20);

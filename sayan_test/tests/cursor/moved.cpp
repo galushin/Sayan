@@ -118,7 +118,7 @@ TEST_CASE("cursor/move: traversed front and back")
 
 TEST_CASE("cursor/move: exhaust back")
 {
-    std::forward_list<std::string> xs(13, "abc");
+    std::list<std::string> xs(13, "abc");
 
     auto cur = sayan::make_move_cursor(xs);
 
